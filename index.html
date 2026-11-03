@@ -1,140 +1,816 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#b5121b">
-<title>OHCI BUS TRACKING</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<style>
-:root{--red:#bd1721;--red2:#8f1018;--navy:#101d32;--ink:#17243a;--muted:#68758a;--line:#e4e9f0;--bg:#f3f6fa;--white:#fff;--green:#16834a;--amber:#a96b00;--shadow:0 12px 34px rgba(16,29,50,.12)}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}body{overflow:hidden}button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
-#app{height:100dvh;min-height:100%;position:relative;overflow:hidden}.topbar{position:absolute;z-index:700;top:max(12px,env(safe-area-inset-top));left:12px;right:12px;display:flex;align-items:center;gap:10px;pointer-events:none}.topbar>*{pointer-events:auto}.iconbtn{width:46px;height:46px;border:1px solid rgba(255,255,255,.7);border-radius:15px;background:#fff;color:var(--navy);box-shadow:var(--shadow);font-size:21px;display:grid;place-items:center}.brandpill{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:15px;padding:7px 12px;box-shadow:var(--shadow);min-width:0;flex:1}.brandmark{width:34px;height:34px;border-radius:11px;background:var(--red);color:#fff;display:grid;place-items:center;font-size:19px}.brandname{font-weight:900;font-size:12px;letter-spacing:.5px;white-space:nowrap}.brand-sub{font-size:9px;color:var(--muted);letter-spacing:1px}.statuspill{border-radius:14px;background:#fff;padding:10px 12px;box-shadow:var(--shadow);font-size:10px;font-weight:900;white-space:nowrap}.statusdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#aab2bf;margin-right:5px}.statuspill.live .statusdot{background:#17a45b}.statuspill.offline .statusdot{background:#d33}
-#map{position:absolute;inset:0;width:100%;height:100%;z-index:1;background:#e9eef4}.leaflet-control-zoom{margin-bottom:255px!important;margin-right:14px!important;border:0!important;box-shadow:var(--shadow)!important}.leaflet-control-zoom a{color:var(--navy)!important;border:0!important;width:38px!important;height:38px!important;line-height:38px!important}.map-tools{position:absolute;right:14px;bottom:270px;z-index:600;display:flex;flex-direction:column;gap:8px}.maptool{width:42px;height:42px;border:0;border-radius:14px;background:#fff;box-shadow:var(--shadow);color:var(--navy);font-size:18px}.maptool:active,.iconbtn:active,.btn:active{transform:scale(.97)}
-.greeting{position:absolute;z-index:500;top:75px;left:12px;right:12px;max-width:520px;margin:auto;background:linear-gradient(110deg,#fff 0%,#fff 65%,#fff4f4 100%);border:1px solid #f0d7d9;border-radius:18px;padding:12px 15px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px}.greeticon{width:42px;height:42px;border-radius:14px;background:#fff0f0;color:var(--red);display:grid;place-items:center;font-size:22px;flex-shrink:0}.greeting strong{display:block;font-size:15px}.greeting small{color:var(--muted);font-size:11px}
-.bottomsheet{position:absolute;z-index:650;bottom:max(10px,env(safe-area-inset-bottom));left:10px;right:10px;max-width:560px;margin:auto;background:#fff;border:1px solid var(--line);border-radius:23px;padding:14px;box-shadow:0 16px 45px rgba(16,29,50,.2);max-height:55dvh;overflow:auto}.sheethead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.sheethead strong{font-size:14px}.subtle{font-size:11px;color:var(--muted)}.modebar{display:flex;gap:7px;background:#f1f4f8;border-radius:13px;padding:4px;margin-bottom:10px}.modebtn{flex:1;border:0;background:transparent;border-radius:10px;padding:9px 6px;font-size:11px;font-weight:800;color:var(--muted)}.modebtn.active{background:var(--navy);color:#fff;box-shadow:0 4px 10px #101d3222}.fieldrow{display:flex;gap:8px;align-items:center}.field{width:100%;min-width:0;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:#f9fbfd;color:var(--ink);outline:none;font-size:13px}.field:focus{border-color:var(--red);box-shadow:0 0 0 3px #bd172116}.btn{border:0;border-radius:12px;padding:12px 15px;font-size:12px;font-weight:900}.btn-red{background:var(--red);color:#fff}.btn-dark{background:var(--navy);color:#fff}.btn-light{background:#f0f3f7;color:var(--navy)}.stoprow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:10px}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.metric{border:1px solid var(--line);border-radius:13px;padding:9px 8px;min-width:0}.metric b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.metric small{font-size:9px;color:var(--muted);font-weight:700}.alertstate{font-size:11px;margin-top:9px;padding:9px 11px;border-radius:11px;background:#f2f6fb;color:var(--muted)}.alertstate.on{background:#eaf7ef;color:var(--green)}
-.drawerveil{position:absolute;inset:0;background:#07101e77;z-index:900;display:none}.drawerveil.show{display:block}.drawer{position:absolute;z-index:950;inset:0 auto 0 0;width:min(340px,88vw);background:#fff;box-shadow:var(--shadow);transform:translateX(-105%);transition:transform .25s;display:flex;flex-direction:column}.drawer.show{transform:translateX(0)}.drawerhead{padding:25px 18px 18px;background:linear-gradient(135deg,var(--red),var(--red2));color:#fff}.drawerhead strong{font-size:18px;letter-spacing:.3px}.drawerhead small{display:block;opacity:.85;margin-top:4px}.drawerbody{padding:16px;overflow:auto}.infocard{border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:12px}.infocard h4{margin:0 0 9px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}.infocard p{margin:5px 0;font-size:13px}.menuaction{width:100%;text-align:left;background:#f4f6f9;border:0;border-radius:11px;padding:12px;margin:5px 0;font-weight:800;color:var(--ink);font-size:12px}.timeline{padding-left:18px;margin:5px 0}.timeline li{padding:0 0 12px 4px;font-size:12px}.muted{color:var(--muted)}
-.overlay{position:fixed;inset:0;z-index:2000;background:rgba(7,16,30,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}.authcard{width:min(430px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:#fff;border-radius:24px;padding:23px;box-shadow:0 24px 70px #0005}.authbrand{text-align:center;margin-bottom:18px}.authlogo{margin:auto auto 10px;width:52px;height:52px;border-radius:16px;background:var(--red);color:#fff;display:grid;place-items:center;font-size:25px}.authbrand h1{font-size:18px;margin:0;letter-spacing:.5px}.authbrand p{font-size:11px;color:var(--muted);margin:5px 0}.authcard h2{font-size:19px;margin:0 0 5px}.authhint{font-size:12px;color:var(--muted);margin:0 0 16px}.formgroup{margin:11px 0;text-align:left}.formgroup label{display:block;font-size:10px;font-weight:900;color:#536176;margin:0 0 6px;text-transform:uppercase;letter-spacing:.6px}.formgroup .field{background:#f8fafc}.full{width:100%}.switchline{text-align:center;margin-top:13px;font-size:12px;color:var(--muted)}.textbtn{border:0;background:none;color:var(--red);font-weight:900}.error{font-size:11px;color:#c21c2a;font-weight:700;min-height:16px;margin-top:8px}.notice{font-size:10px;color:#7a5360;background:#fff3f3;border:1px solid #f2d5d7;border-radius:10px;padding:9px;line-height:1.45;margin-top:12px}.toast{position:absolute;z-index:1600;top:130px;left:50%;transform:translateX(-50%) translateY(-10px);opacity:0;pointer-events:none;background:var(--navy);color:#fff;padding:12px 16px;border-radius:13px;box-shadow:var(--shadow);font-size:12px;font-weight:800;max-width:90%;text-align:center;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.bus-marker{background:transparent;border:0}.bus-wrap{width:48px;height:58px;filter:drop-shadow(0 4px 4px #0005);transform-origin:center center}.bus-wrap svg{width:100%;height:100%}.user-marker{width:18px;height:18px;border:3px solid #fff;border-radius:50%;background:#2478ed;box-shadow:0 0 0 7px #2478ed33,0 2px 8px #0005}.stop-pin{background:#fff;border:3px solid var(--red);border-radius:50%;width:15px;height:15px;box-shadow:0 2px 8px #0004}
-@media(min-width:800px){.topbar{left:22px;right:22px;top:18px}.greeting{top:82px;left:22px;right:auto;width:390px}.bottomsheet{left:auto;right:22px;bottom:20px;width:440px;max-width:calc(100vw - 44px);max-height:calc(100dvh - 190px)}.map-tools{right:475px;bottom:28px}.leaflet-control-zoom{margin-bottom:24px!important;margin-right:475px!important}.brandname{font-size:13px}}
-@media(max-width:420px){.topbar{gap:6px;left:8px;right:8px}.brandpill{padding:6px 8px;gap:7px}.brandmark{width:31px;height:31px}.brandname{font-size:10px}.brand-sub{font-size:8px}.statuspill{padding:9px 8px;font-size:9px}.greeting{left:8px;right:8px;top:68px;padding:10px 12px}.bottomsheet{left:7px;right:7px;padding:11px;bottom:7px}.metrics{gap:5px}.metric{padding:8px 6px}.metric b{font-size:13px}.metric small{font-size:8px}.map-tools{bottom:265px;right:10px}}
-@media(max-height:650px){.greeting{top:66px;padding:8px 11px}.greeticon{width:34px;height:34px}.bottomsheet{max-height:48dvh;padding:10px}.metric{padding:6px}.modebtn{padding:7px}.map-tools{bottom:220px}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>OHCI BUS TRACKING | Manpower Transport Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: "Inter", "Segoe UI", sans-serif; }
+    h1,h2,h3,.btn-primary,.link-toggle,.route-disp { font-family: "Manrope", "Inter", sans-serif; }
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; color: #fff; }
+    #map { height: 100vh; width: 100%; z-index: 1; }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); z-index: 99999;
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-card {
+      background: #111827; border: 1.5px solid #374151; border-radius: 24px; padding: 24px 20px;
+      width: 100%; max-width: 380px; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+    }
+    .modal-card h2 { margin: 0 0 6px 0; font-size: 22px; letter-spacing: -0.45px; line-height: 1.25; font-weight: 800; color: #fff; }
+    .modal-card p { font-size: 13px; line-height: 1.55; letter-spacing: .1px; color: #b6c2d1; margin: 0 0 18px 0; }
+    .input-field, .select-field {
+      width: 100%; padding: 12px 14px; background: #1f2937; border: 1.5px solid #4b5563;
+      border-radius: 12px; color: #fff; font-size: 14px; font-weight: 600; letter-spacing: .1px; outline: none; margin-bottom: 11px; min-height: 48px;
+    }
+    .input-field:focus, .select-field:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,.13); }
+    .input-field::placeholder { color: #9aa8b9; font-weight: 500; }
+    .field-label { display:block; text-align:left; color:#dbe5f1; font-size:11px; font-weight:700; letter-spacing:.7px; text-transform:uppercase; margin:2px 0 6px 3px; }
+    .form-note { color:#94a3b8; font-size:11px; line-height:1.5; margin:0 0 12px; text-align:left; }
+    .btn-primary {
+      width: 100%; padding: 14px; background: #fff; color: #000; font-weight: 800; font-size: 15px;
+      border: none; border-radius: 12px; cursor: pointer; transition: 0.2s;
+    }
+    .btn-primary:active { transform: scale(0.97); }
+    .link-toggle { color: #38bdf8; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: underline; margin-top: 10px; display: inline-block; }
+
+    /* Top Bar */
+    .top-bar {
+      position: absolute; top: 12px; left: 12px; right: 12px; z-index: 1200;
+      display: flex; align-items: center; gap: 8px; pointer-events: none;
+    }
+    .top-bar > * { pointer-events: auto; }
+    .btn-icon {
+      width: 44px; height: 44px; border-radius: 22px; background: #111827; border: 1.5px solid #374151;
+      color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.6); flex-shrink: 0;
+    }
+    .badge-shift {
+      height: 44px; padding: 0 14px; border-radius: 22px; background: #111827; border: 1.5px solid #374151;
+      color: #38bdf8; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 6px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6); cursor: pointer; flex-shrink: 0;
+    }
+    .header-info-card {
+      flex: 1; min-width: 0; background: #111827; border: 1.5px solid #374151; padding: 8px 14px;
+      border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); display: flex; justify-content: space-between; align-items: center;
+    }
+    .route-disp { font-size: 13px; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .speed-disp { font-size: 11px; color: #94a3af; font-weight: 600; }
+    .live-indicator {
+      font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 20px; text-transform: uppercase;
+    }
+    .live-on { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e; }
+    .live-off { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
+
+    /* Bottom Gradient Card */
+    .bottom-card {
+      position: absolute; bottom: 16px; left: 14px; right: 14px; max-width: 440px; margin: 0 auto;
+      background: linear-gradient(145deg, #18202f 0%, #080d16 100%);
+      border: 1.5px solid #374151; border-radius: 26px; padding: 14px 16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.9); z-index: 1100; display: flex; flex-direction: column; gap: 10px;
+    }
+    .stop-select-wrapper {
+      display: flex; align-items: center; gap: 8px; background: #111827;
+      border: 1px solid #475569; padding: 8px 12px; border-radius: 14px;
+    }
+    .stop-select-wrapper select {
+      flex: 1; background: transparent; border: none; color: #fff; font-size: 13px; font-weight: 700; outline: none;
+    }
+    .passenger-dist-box {
+      background: #111827; border: 1px solid #374151; padding: 9px 12px; border-radius: 14px;
+      display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    }
+    .dist-lbl { font-size: 11px; color: #94a3af; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+    .dist-val { font-size: 13px; color: #38bdf8; font-weight: 800; }
+    .metrics-row { display: flex; justify-content: space-between; align-items: center; }
+    .target-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94a3af; }
+    .target-stop-name { font-size: 14px; font-weight: 800; color: #fff; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .eta-pill { background: #fff; color: #000; padding: 6px 12px; border-radius: 16px; text-align: right; }
+    .eta-mins { font-size: 13px; font-weight: 800; }
+    .eta-dist { font-size: 9px; color: #475569; font-weight: 700; }
+
+    /* Side Navigation Drawer */
+    .drawer-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.7); z-index: 2500; display: none; backdrop-filter: blur(3px);
+    }
+    .drawer-overlay.active { display: block; }
+    .side-drawer {
+      position: fixed; top: 0; left: -330px; width: 310px; height: 100%;
+      background: #0f172a; border-right: 1.5px solid #334155; z-index: 2600;
+      transition: left 0.35s ease; display: flex; flex-direction: column;
+    }
+    .side-drawer.active { left: 0; }
+    .drawer-top {
+      background: linear-gradient(135deg, #d71920 0%, #881337 100%);
+      padding: 22px 18px; color: #fff; position: relative;
+    }
+    .drawer-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; }
+    .drawer-content { padding: 18px; overflow-y: auto; flex: 1; }
+    .driver-info-panel {
+      background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 14px; margin-bottom: 16px;
+    }
+    .call-btn {
+      display: inline-block; margin-top: 8px; padding: 6px 14px; background: #22c55e;
+      color: #fff; text-decoration: none; border-radius: 18px; font-size: 12px; font-weight: 800;
+    }
+    .timeline { list-style: none; padding: 0; margin: 10px 0; }
+    .timeline-item { position: relative; padding-left: 20px; margin-bottom: 14px; font-size: 12px; }
+    .timeline-item::before {
+      content: ''; position: absolute; left: 4px; top: 4px; width: 8px; height: 8px;
+      border-radius: 50%; background: #38bdf8;
+    }
+    .timeline-item.dest::before { background: #ef4444; }
+    .timeline-item::after {
+      content: ''; position: absolute; left: 7px; top: 15px; bottom: -14px; width: 2px; background: #334155;
+    }
+    .timeline-item:last-child::after { display: none; }
+
+    /* Center Alert Pop Card */
+    .pop-alert-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 99998;
+      display: none; align-items: center; justify-content: center; padding: 18px;
+    }
+    .pop-alert-overlay.show { display: flex; }
+    .pop-card {
+      background: #111827; border: 2px solid #38bdf8; border-radius: 26px; padding: 24px;
+      max-width: 350px; width: 100%; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+      animation: popIn 0.3s ease-out;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .pop-icon { font-size: 40px; margin-bottom: 8px; }
+    .pop-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .pop-body { font-size: 13px; color: #cbd5e1; line-height: 1.5; margin-bottom: 16px; }
+    .pop-btn { width: 100%; padding: 12px; background: #38bdf8; color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
+
+    .stop-badge {
+      background: #0f172a; border: 1.5px solid #38bdf8; color: #fff; font-size: 10px; font-weight: 800;
+      padding: 2px 6px; border-radius: 8px; white-space: nowrap;
+    }
+    .stop-badge.dest { border-color: #ef4444; color: #f87171; }
+  </style>
 </head>
 <body>
-<div id="app">
-  <div id="map"></div>
-  <div class="topbar">
-    <button class="iconbtn" id="menuBtn" aria-label="Open menu">☰</button>
-    <div class="brandpill"><div class="brandmark">🚌</div><div><div class="brandname">OHCI BUS TRACKING</div><div class="brand-sub">MANPOWER TRANSPORT</div></div></div>
-    <div class="statuspill offline" id="statusPill"><span class="statusdot"></span><span id="statusText">CONNECTING</span></div>
+
+  <!-- Modal 1: Employee Registration (New User) -->
+  <div id="registerModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div style="font-size: 36px; margin-bottom: 4px;">🛡️</div>
+      <h2>Employee Registration</h2>
+      <p>Register your corporate ID once to access live tracking.</p>
+      
+      <input type="text" id="regEmpId" class="input-field" placeholder="Employee ID (e.g. HIT-102)" />
+      <input type="text" id="regName" class="input-field" placeholder="Full Name" />
+      <input type="text" id="regDept" class="input-field" placeholder="Department (e.g. Quality)" />
+      <input type="tel" id="regPhone" class="input-field" placeholder="Mobile Number (10 Digits)" maxlength="10" />
+      <label class="field-label" for="regRouteSelect">Select Your Route</label>
+      <select id="regRouteSelect" class="select-field"><option value="">Loading routes from database...</option></select>
+      <p class="form-note">Route options are loaded automatically from the company Firebase database.</p>
+
+      <button class="btn-primary" onclick="submitRegistration()">Create Employee Account</button>
+      <div><span class="link-toggle" onclick="showLoginView(true)">Already registered? Log In with Employee ID</span></div>
+      <div id="regErr" style="color: #ef4444; font-size: 12px; margin-top: 8px; font-weight: 700;"></div>
+    </div>
   </div>
-  <div class="greeting" id="greetingCard"><div class="greeticon" id="greetIcon">☀️</div><div><strong id="greetTitle">Good day!</strong><small id="greetSub">Welcome to OHCI BUS TRACKING</small></div></div>
-  <div class="map-tools"><button class="maptool" id="myLocationBtn" title="My location">◎</button><button class="maptool" id="fitRouteBtn" title="Fit route">⌖</button></div>
-  <section class="bottomsheet" id="trackingPanel">
-    <div class="sheethead"><strong id="panelTitle">Your bus journey</strong><span class="subtle" id="routeLabel">Route not set</span></div>
-    <div class="modebar"><button class="modebtn active" data-mode="morning">☀ Morning Pickup</button><button class="modebtn" data-mode="evening">🌙 Evening Drop</button></div>
-    <div class="stoprow"><select class="field" id="stopSelect"><option value="">Choose your stop</option></select><button class="btn btn-red" id="setAlertBtn">Set alert</button></div>
-    <div class="metrics">
-      <div class="metric"><b id="distanceValue">--</b><small>BUS DISTANCE</small></div>
-      <div class="metric"><b id="speedValue">--</b><small>BUS SPEED</small></div>
-      <div class="metric"><b id="etaValue">--</b><small>STOP ETA</small></div>
-      <div class="metric"><b id="nextStopValue">--</b><small>NEXT STOP</small></div>
-    </div>
-    <div class="alertstate" id="alertState">Choose a stop to activate your arrival alert.</div>
-  </section>
-  <div class="drawerveil" id="drawerVeil"></div>
-  <aside class="drawer" id="drawer">
-    <div class="drawerhead"><strong>OHCI BUS TRACKING</strong><small id="drawerRoute">Route information</small></div>
-    <div class="drawerbody">
-      <div class="infocard"><h4>Employee profile</h4><p><b id="profileName">--</b></p><p>Employee ID: <span id="profileId">--</span></p><p>Department: <span id="profileDept">--</span></p><p>Shift: <span id="profileShift">--</span></p></div>
-      <div class="infocard"><h4>Route & bus details</h4><p id="routeFromTo">Route: --</p><p id="driverName">Driver: --</p><p id="busNumber">Bus: --</p><p id="driverPhone">Phone: --</p><a id="callDriver" class="btn btn-dark" href="#" style="display:inline-block;text-decoration:none;margin-top:7px">Call driver</a></div>
-      <div class="infocard"><h4>Route stops</h4><ol class="timeline" id="stopTimeline"><li class="muted">Stops will appear here.</li></ol></div>
-      <button class="menuaction" id="changeRouteBtn">↔ Change route / shift</button>
-      <button class="menuaction" id="logoutBtn" style="color:var(--red)">⇥ Log out</button>
-    </div>
-  </aside>
-  <div class="toast" id="toast"></div>
-</div>
 
-<!-- Registration: only the five fields requested -->
-<div class="overlay hidden" id="registerOverlay"><div class="authcard">
-  <div class="authbrand"><div class="authlogo">🚌</div><h1>OHCI BUS TRACKING</h1><p>MANPOWER TRANSPORT MANAGEMENT</p></div>
-  <h2>Employee Registration</h2><p class="authhint">Register once to access your bus tracking dashboard.</p>
-  <div class="formgroup"><label>Employee Name</label><input class="field" id="regName" autocomplete="name" placeholder="Enter full name"></div>
-  <div class="formgroup"><label>Employee ID</label><input class="field" id="regEmpId" autocomplete="off" placeholder="Enter employee ID"></div>
-  <div class="formgroup"><label>Department</label><input class="field" id="regDept" placeholder="Enter department"></div>
-  <div class="formgroup"><label>Shift</label><input class="field" id="regShift" placeholder="Enter your shift"></div>
-  <div class="formgroup"><label>Route</label><input class="field" id="regRoute" placeholder="Enter route name / route ID"></div>
-  <button class="btn btn-red full" id="registerBtn">REGISTER</button><div class="switchline">Already registered? <button class="textbtn" id="showLoginBtn">Login with Employee ID</button></div>
-  <div class="error" id="registerError"></div>
-  <div class="notice">Employee ID duplicate registration is blocked by an atomic database transaction. Employee-ID-only login is convenient but is not strong identity verification; use Firebase Authentication or company-admin approval before production rollout.</div>
-</div></div>
-<div class="overlay hidden" id="loginOverlay"><div class="authcard">
-  <div class="authbrand"><div class="authlogo">🚌</div><h1>OHCI BUS TRACKING</h1><p>EMPLOYEE ACCESS</p></div>
-  <h2>Welcome back</h2><p class="authhint">Enter your registered Employee ID to login.</p>
-  <div class="formgroup"><label>Employee ID</label><input class="field" id="loginEmpId" autocomplete="username" placeholder="Enter Employee ID"></div>
-  <button class="btn btn-red full" id="loginBtn">LOGIN</button><div class="switchline">New employee? <button class="textbtn" id="showRegisterBtn">Register here</button></div>
-  <div class="error" id="loginError"></div>
-</div></div>
-<div class="overlay hidden" id="routeOverlay"><div class="authcard">
-  <div class="authbrand"><div class="authlogo">🗺️</div><h1>OHCI BUS TRACKING</h1></div>
-  <h2>Confirm your route</h2><p class="authhint">Your registration details are loaded. Check the route and shift.</p>
-  <div class="formgroup"><label>Registered route (editable)</label><input class="field" id="routeConfirm" placeholder="Route name or route ID"></div>
-  <div class="formgroup"><label>Registered shift (editable)</label><input class="field" id="shiftConfirm" placeholder="Your shift"></div>
-  <button class="btn btn-red full" id="confirmRouteBtn">OPEN DASHBOARD</button><div class="error" id="routeError"></div>
-</div></div>
-<div class="overlay hidden" id="confirmOverlay"><div class="authcard" style="text-align:center;max-width:340px"><div class="authlogo">✓</div><h2 id="confirmTitle">Alert successfully set!</h2><p class="authhint" id="confirmText">We will notify you before your stop.</p><button class="btn btn-red full" id="confirmOk">GOT IT</button></div></div>
+  <!-- Modal 2: Employee ID Direct Login (Existing User) -->
+  <div id="loginModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div style="font-size: 36px; margin-bottom: 4px;">🔑</div>
+      <h2>Employee Login</h2>
+      <p>Enter your Employee ID and select your registered route.</p>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script>
-'use strict';
-const firebaseConfig={apiKey:"AIzaSyB-iOXJP2sF-dOsoIa0pwpB_Y6icYrgXGU",authDomain:"hitachilivebus.firebaseapp.com",databaseURL:"https://hitachilivebus-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"hitachilivebus",storageBucket:"hitachilivebus.firebasestorage.app",messagingSenderId:"260695885646",appId:"1:260695885646:web:c7997f049dc3dee1f2801f",measurementId:"G-VDG7P2MRPZ"};
-let db=null,map=null,routes={},user=null,activeRouteId=null,activeShift='',activeStops=[],busData=null,busMarker=null,userMarker=null,stopMarkers=[],busRef=null,geoWatch=null,userLat=null,userLng=null,mode='morning',selectedStopIndex=null,alertFired=false,lastBusLat=null,lastBusLng=null,toastTimer=null;
-const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function show(id){$(id).classList.remove('hidden')}function hide(id){$(id).classList.add('hidden')}
-function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2600)}
-function modal(title,msg){$('confirmTitle').textContent=title;$('confirmText').textContent=msg;show('confirmOverlay')}
-function normalizeId(v){return String(v||'').trim().toUpperCase().replace(/\s+/g,'')}
-function employeeKey(empId){return 'emp_'+normalizeId(empId).replace(/[^A-Z0-9]/g,'_')}
-function initMap(){map=L.map('map',{zoomControl:false,preferCanvas:true}).setView([13.2896471,77.5701378],12);L.control.zoom({position:'bottomright'}).addTo(map);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map)}
-function busIcon(bearing=0){return L.divIcon({className:'bus-marker',iconSize:[48,58],iconAnchor:[24,29],html:`<div class="bus-wrap" style="transform:rotate(${bearing}deg)"><svg viewBox="0 0 64 78" aria-label="Bus"><ellipse cx="32" cy="40" rx="23" ry="34" fill="#000" opacity=".17"/><rect x="13" y="4" width="38" height="69" rx="11" fill="#bd1721" stroke="#fff" stroke-width="2.5"/><path d="M18 12Q18 8 23 8H41Q46 8 46 12V27H18Z" fill="#14243b" stroke="#fff" stroke-width="1.5"/><rect x="18" y="31" width="28" height="25" rx="4" fill="#f4f7fb" stroke="#8e9bad"/><path d="M21 35h22M21 42h22M21 49h22" stroke="#9aa8ba" stroke-width="1.5"/><rect x="17" y="60" width="30" height="7" rx="2" fill="#14243b"/><rect x="8" y="19" width="5" height="12" rx="2" fill="#17243a"/><rect x="51" y="19" width="5" height="12" rx="2" fill="#17243a"/><circle cx="22" cy="6" r="2" fill="#ffe7a3"/><circle cx="42" cy="6" r="2" fill="#ffe7a3"/></svg></div>`})}
-function userIcon(){return L.divIcon({className:'',html:'<div class="user-marker"></div>',iconSize:[18,18],iconAnchor:[9,9]})}
-function stopIcon(){return L.divIcon({className:'',html:'<div class="stop-pin"></div>',iconSize:[15,15],iconAnchor:[7,7]})}
-function distanceM(a,b,c,d){const R=6371000,p=Math.PI/180,dp=(c-a)*p,dl=(d-b)*p,x=Math.sin(dp/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
-function bearing(a,b,c,d){const p=Math.PI/180,y=Math.sin((d-b)*p)*Math.cos(c*p),x=Math.cos(a*p)*Math.sin(c*p)-Math.sin(a*p)*Math.cos(c*p)*Math.cos((d-b)*p);return(Math.atan2(y,x)*180/Math.PI+360)%360}
-function greeting(){const h=new Date().getHours(),g=h<12?'Good Morning':h<17?'Good Afternoon':'Good Evening';$('greetTitle').textContent=`${g}, ${user?.name||'there'}!`;$('greetSub').textContent='Welcome to OHCI BUS TRACKING. Have a safe journey.';$('greetIcon').textContent=h<12?'☀️':h<17?'🌤️':'🌙'}
-function resolveRoute(text){const q=String(text||'').trim().toLowerCase();if(!q)return null;let found=Object.keys(routes).find(k=>k.toLowerCase()===q);if(found)return found;found=Object.keys(routes).find(k=>String(routes[k]?.routeName||'').trim().toLowerCase()===q);return found||null}
-function showAuth(){const saved=localStorage.getItem('ohci_user');if(saved){try{user=JSON.parse(saved);if(user?.empId){startWithUser();return}}catch(e){localStorage.removeItem('ohci_user')}}show('registerOverlay')}
-async function register(){const name=$('regName').value.trim(),empId=normalizeId($('regEmpId').value),department=$('regDept').value.trim(),shift=$('regShift').value.trim(),route=$('regRoute').value.trim(),err=$('registerError');err.textContent='';if(!name||!empId||!department||!shift||!route){err.textContent='Please fill all five fields.';return}const key=employeeKey(empId),record={name,empId,department,shift,route,registeredAt:Date.now()};$('registerBtn').disabled=true;$('registerBtn').textContent='REGISTERING…';try{const ref=db.ref('registered_users/'+key);const result=await ref.transaction(current=>current===null?record:undefined);if(!result.committed){err.textContent='This Employee ID is already registered. Please login.';return}user=record;localStorage.setItem('ohci_user',JSON.stringify(record));hide('registerOverlay');startWithUser()}catch(e){err.textContent='Registration failed: '+(e.message||'Check internet / Firebase rules.')}finally{$('registerBtn').disabled=false;$('registerBtn').textContent='REGISTER'}}
-async function login(){const empId=normalizeId($('loginEmpId').value),err=$('loginError');err.textContent='';if(!empId){err.textContent='Enter your Employee ID.';return}const key=employeeKey(empId);$('loginBtn').disabled=true;try{const snap=await db.ref('registered_users/'+key).once('value');if(!snap.exists()||normalizeId(snap.val().empId)!==empId){err.textContent='Employee ID not found.';return}user=snap.val();localStorage.setItem('ohci_user',JSON.stringify(user));hide('loginOverlay');startWithUser()}catch(e){err.textContent='Login failed. Check your internet connection.'}finally{$('loginBtn').disabled=false}}
-function startWithUser(){hide('registerOverlay');hide('loginOverlay');$('routeConfirm').value=user.route||'';$('shiftConfirm').value=user.shift||'';show('routeOverlay');$('profileName').textContent=user.name||'--';$('profileId').textContent=user.empId||'--';$('profileDept').textContent=user.department||'--';$('profileShift').textContent=user.shift||'--'}
-function confirmRoute(){const routeText=$('routeConfirm').value.trim(),shift=$('shiftConfirm').value.trim(),rid=resolveRoute(routeText),err=$('routeError');err.textContent='';if(!routeText||!shift){err.textContent='Route and shift are required.';return}user.route=routeText;user.shift=shift;user.routeId=rid||'';localStorage.setItem('ohci_user',JSON.stringify(user));activeRouteId=rid;activeShift=shift;hide('routeOverlay');greeting();if(!rid){$('routeLabel').textContent='Route not found';$('statusText').textContent='ROUTE NOT FOUND';$('statusPill').className='statuspill offline';toast('Route name must match a routes_master route name or ID.');return}loadRoute();startClockGreeting()}
-function loadRoute(){const r=routes[activeRouteId];if(!r)return;activeStops=Array.isArray(r.stops)?r.stops:Object.values(r.stops||{});activeStops=activeStops.filter(s=>s&&Number.isFinite(Number(s.lat))&&Number.isFinite(Number(s.lng)));$('routeLabel').textContent=r.routeName||activeRouteId;$('drawerRoute').textContent=r.routeName||activeRouteId;$('routeFromTo').textContent=`Route: ${r.from||'--'} → ${r.to||'--'}`;$('driverName').textContent='Driver: '+(r.driverName||'Not provided');$('busNumber').textContent='Bus: '+(r.busNumber||'--');$('driverPhone').textContent='Phone: '+(r.driverPhone||'--');$('callDriver').href=r.driverPhone?'tel:'+String(r.driverPhone).replace(/[^+\d]/g,''):'#';$('callDriver').style.opacity=r.driverPhone?1:.45;
-$('stopSelect').innerHTML='<option value="">Choose your stop</option>';const list=$('stopTimeline');list.innerHTML='';stopMarkers.forEach(m=>map.removeLayer(m));stopMarkers=[];activeStops.forEach((s,i)=>{const o=document.createElement('option');o.value=i;o.textContent=s.name||`Stop ${i+1}`;$('stopSelect').appendChild(o);const li=document.createElement('li');li.textContent=(s.name||`Stop ${i+1}`)+(s.time?' · '+s.time:'');list.appendChild(li);const m=L.marker([Number(s.lat),Number(s.lng)],{icon:stopIcon()}).bindTooltip(esc(s.name||`Stop ${i+1}`)).addTo(map);stopMarkers.push(m)});if(activeStops.length){const group=L.featureGroup(stopMarkers);map.fitBounds(group.getBounds().pad(.2),{maxZoom:14})}restoreStopForMode();listenBus();if(!geoWatch)startLocation();}
-function listenBus(){if(busRef){busRef.off();busRef=null}busRef=db.ref('live_bus/'+activeRouteId);busRef.on('value',snap=>{busData=snap.val();renderBus() },err=>{setStatus(false,'DATABASE ERROR');toast('Could not read live bus data.')})}
-function renderBus(){const b=busData,now=Date.now(),updated=Number(b?.updatedAt||0),fresh=updated>0&&(now-updated)<60000,valid=b&&Number.isFinite(Number(b.latitude))&&Number.isFinite(Number(b.longitude));if(!b||!b.isActive||!fresh||!valid||(b.activeShift&&String(b.activeShift).trim().toLowerCase()!==String(activeShift).trim().toLowerCase())){setStatus(false,b?'GPS STALE / OFFLINE':'WAITING FOR BUS');if(busMarker){busMarker.setOpacity(.35)}$('speedValue').textContent='--';$('etaValue').textContent='--';$('nextStopValue').textContent='--';$('distanceValue').textContent='--';return}setStatus(true,'BUS LIVE');const lat=Number(b.latitude),lng=Number(b.longitude),spd=Math.max(0,Number(b.speed)||0);$('speedValue').textContent=spd.toFixed(0)+' km/h';if(busMarker){const br=lastBusLat===null?0:bearing(lastBusLat,lastBusLng,lat,lng);busMarker.setLatLng([lat,lng]);busMarker.setIcon(busIcon(br));busMarker.setOpacity(1)}else busMarker=L.marker([lat,lng],{icon:busIcon()}).addTo(map).bindTooltip('OHCI Bus');if(lastBusLat===null)map.setView([lat,lng],14);lastBusLat=lat;lastBusLng=lng;updateMetrics();checkArrivalAlert()}
-function setStatus(live,label){$('statusPill').className='statuspill '+(live?'live':'offline');$('statusText').textContent=label}
-function nearestUpcomingStop(lat,lng){if(!activeStops.length)return null;let best=null;activeStops.forEach((s,i)=>{const d=distanceM(lat,lng,Number(s.lat),Number(s.lng));if(!best||d<best.d)best={s,i,d}});return best}
-function updateMetrics(){if(!busData||lastBusLat===null)return;const spd=Math.max(0,Number(busData.speed)||0),nearest=nearestUpcomingStop(lastBusLat,lastBusLng);$('nextStopValue').textContent=nearest?(nearest.s.name||'Stop'):'--';if(userLat!==null&&userLng!==null)$('distanceValue').textContent=(distanceM(userLat,userLng,lastBusLat,lastBusLng)/1000).toFixed(1)+' km';else $('distanceValue').textContent='GPS off';if(selectedStopIndex!==null&&activeStops[selectedStopIndex]){const st=activeStops[selectedStopIndex],d=distanceM(lastBusLat,lastBusLng,Number(st.lat),Number(st.lng));$('etaValue').textContent=spd>2?Math.max(1,Math.round(d/1000/spd*60))+' min':'--';}else if(nearest){$('etaValue').textContent=spd>2?Math.max(1,Math.round(nearest.d/1000/spd*60))+' min':'--'}else $('etaValue').textContent='--'}
-function modeKey(){return 'ohci_stop_'+(user?.empId||'')+'_'+mode}
-function restoreStopForMode(){const saved=localStorage.getItem(modeKey());selectedStopIndex=saved!==null?Number(saved):null;if(!Number.isInteger(selectedStopIndex)||selectedStopIndex<0||selectedStopIndex>=activeStops.length)selectedStopIndex=null;$('stopSelect').value=selectedStopIndex===null?'':String(selectedStopIndex);updateAlertState()}
-function switchMode(next){mode=next;document.querySelectorAll('.modebtn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));restoreStopForMode();$('panelTitle').textContent=mode==='morning'?'Morning pickup tracking':'Evening drop tracking'}
-async function setStopAlert(){const val=$('stopSelect').value;if(val===''){toast('Please choose your stop first.');return}selectedStopIndex=Number(val);localStorage.setItem(modeKey(),String(selectedStopIndex));alertFired=false;updateAlertState();if('Notification'in window&&Notification.permission==='default'){try{await Notification.requestPermission()}catch(e){}}modal('Alert successfully set!',`${mode==='morning'?'Pickup':'Drop'} alert is active for ${activeStops[selectedStopIndex].name}. We will alert you approximately one minute before the bus reaches your stop.`);}
-function updateAlertState(){const el=$('alertState');if(selectedStopIndex===null){el.className='alertstate';el.textContent='Choose a stop to activate your arrival alert.'}else{el.className='alertstate on';el.textContent=`✓ ${activeStops[selectedStopIndex]?.name||'Selected stop'} alert is ON · ${mode==='morning'?'Morning pickup':'Evening drop'}`}}
-function checkArrivalAlert(){if(selectedStopIndex===null||alertFired||!busData||lastBusLat===null)return;const st=activeStops[selectedStopIndex];if(!st)return;const d=distanceM(lastBusLat,lastBusLng,Number(st.lat),Number(st.lng));const speed=Math.max(0,Number(busData.speed)||0);const mins=speed>2?(d/1000)/speed*60:Infinity;/* proximity + ETA threshold; road traffic may change actual arrival */if(d<=300||mins<=1){alertFired=true;const title='Your Bus Is Arriving!';const body=`Your stop ${st.name} is approaching. Please get ready!`;sendArrivalNotification(title,body);$('alertState').textContent='🔔 Arrival alert triggered for '+st.name;}}
-function sendArrivalNotification(title,body){try{if('Notification'in window&&Notification.permission==='granted'){const n=new Notification('OHCI BUS TRACKING',{body:body,tag:'ohci-'+mode+'-'+selectedStopIndex,renotify:false,icon:''});n.onclick=()=>{window.focus();n.close()}}else toast(body)}catch(e){toast(body)}try{if(navigator.vibrate)navigator.vibrate([350,150,350,150,500])}catch(e){}playChime()}
-function playChime(){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=880;g.gain.value=.16;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.35);o.onended=()=>c.close()}catch(e){}}
-function startLocation(){if(!navigator.geolocation){toast('GPS is not supported on this device.');return}if(geoWatch!==null)navigator.geolocation.clearWatch(geoWatch);geoWatch=navigator.geolocation.watchPosition(pos=>{userLat=pos.coords.latitude;userLng=pos.coords.longitude;if(!userMarker)userMarker=L.marker([userLat,userLng],{icon:userIcon(),zIndexOffset:900}).addTo(map).bindTooltip('You are here');else userMarker.setLatLng([userLat,userLng]);updateMetrics();},err=>{if(err.code===1)toast('Location permission denied. Enable location permission.');else if(err.code===2)toast('Current GPS location unavailable.');},{enableHighAccuracy:true,maximumAge:5000,timeout:15000});}
-function locateMe(){if(userLat!==null&&userLng!==null)map.setView([userLat,userLng],16);else{startLocation();toast('Getting your GPS location…')}}function fitRoute(){const layers=[...stopMarkers];if(busMarker)layers.push(busMarker);if(userMarker)layers.push(userMarker);if(layers.length)map.fitBounds(L.featureGroup(layers).getBounds().pad(.2),{maxZoom:15})}
-function openDrawer(){ $('drawer').classList.add('show');$('drawerVeil').classList.add('show')}function closeDrawer(){$('drawer').classList.remove('show');$('drawerVeil').classList.remove('show')}
-function logout(){if(!confirm('Log out from this device?'))return;localStorage.removeItem('ohci_user');localStorage.removeItem(modeKey());if(busRef)busRef.off();if(geoWatch!==null)navigator.geolocation.clearWatch(geoWatch);location.reload()}
-function startClockGreeting(){greeting();setInterval(greeting,60000)}
-function bindUI(){$('registerBtn').addEventListener('click',register);$('loginBtn').addEventListener('click',login);$('showLoginBtn').onclick=()=>{hide('registerOverlay');show('loginOverlay')};$('showRegisterBtn').onclick=()=>{hide('loginOverlay');show('registerOverlay')};$('confirmRouteBtn').onclick=confirmRoute;$('confirmOk').onclick=()=>hide('confirmOverlay');$('menuBtn').onclick=openDrawer;$('drawerVeil').onclick=closeDrawer;$('changeRouteBtn').onclick=()=>{closeDrawer();$('routeConfirm').value=user.route||'';$('shiftConfirm').value=user.shift||'';show('routeOverlay')};$('logoutBtn').onclick=logout;$('setAlertBtn').onclick=setStopAlert;$('stopSelect').onchange=()=>{selectedStopIndex=$('stopSelect').value===''?null:Number($('stopSelect').value);alertFired=false;updateAlertState()};document.querySelectorAll('.modebtn').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));$('myLocationBtn').onclick=locateMe;$('fitRouteBtn').onclick=fitRoute;['regEmpId','loginEmpId'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')id==='regEmpId'?register():login()}));}
-function init(){try{if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);db=firebase.database();initMap();bindUI();db.ref('routes_master').on('value',snap=>{routes=snap.val()||{};if(activeRouteId&&routes[activeRouteId])loadRoute();});showAuth();}catch(e){console.error(e);show('registerOverlay');$('registerError').textContent='App initialization failed. Check Firebase configuration and internet.'}}
-window.addEventListener('online',()=>toast('Internet connected.'));window.addEventListener('offline',()=>toast('Internet disconnected. Live tracking paused.'));document.addEventListener('visibilitychange',()=>{if(!document.hidden){greeting();if(busData)checkArrivalAlert()}});window.addEventListener('load',init);
-</script>
+      <input type="text" id="loginEmpId" class="input-field" placeholder="Employee ID (e.g. HIT-102)" autocomplete="username" />
+      <label class="field-label" for="loginRouteSelect">Select Your Registered Route</label>
+      <select id="loginRouteSelect" class="select-field"><option value="">Loading routes from database...</option></select>
+      <button class="btn-primary" onclick="submitEmpLogin()">Next</button>
+      <div><span class="link-toggle" onclick="showLoginView(false)">New Employee? Register Here</span></div>
+      <div id="loginErr" style="color: #ef4444; font-size: 12px; margin-top: 8px; font-weight: 700;"></div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Route & Shift Selector -->
+  <div id="routeShiftModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div style="font-size: 34px; margin-bottom: 4px;">🚌</div>
+      <h2>Select Route & Shift</h2>
+      <p>Choose your commuting route and shift to load live bus tracking.</p>
+
+      <select id="userRouteSelect" class="select-field">
+        <option value="">-- Select Your Route --</option>
+      </select>
+
+      <select id="userShiftSelect" class="select-field">
+        <option value="GENERAL">General Shift</option>
+        <option value="SHIFT_1">Shift 1 (Morning Commute)</option>
+        <option value="SHIFT_2">Shift 2 (Afternoon Commute)</option>
+      </select>
+
+      <button class="btn-primary" onclick="applyRouteAndShift()">Open Live Tracking</button>
+      <div id="routeShiftErr" style="color: #ef4444; font-size: 12px; margin-top: 8px; font-weight: 700;"></div>
+    </div>
+  </div>
+
+  <!-- Center Pop-up Notification Card -->
+  <div id="centerPopModal" class="pop-alert-overlay">
+    <div class="pop-card">
+      <div class="pop-icon" id="popIcon">🔔</div>
+      <div class="pop-title" id="popTitle">Notification</div>
+      <div class="pop-body" id="popBody">--</div>
+      <button class="pop-btn" onclick="closePopAlert()">Got It</button>
+    </div>
+  </div>
+
+  <!-- Side Navigation Drawer -->
+  <div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div>
+  <div id="sideDrawer" class="side-drawer">
+    <div class="drawer-top">
+      <button class="drawer-close" onclick="toggleDrawer(false)">✕</button>
+      <h3 style="margin: 0 0 2px 0;">OHCI BUS TRACKING</h3>
+      <small id="drawerRouteName">Route Overview</small>
+    </div>
+    <div class="drawer-content">
+      <div class="driver-info-panel">
+        <div style="font-size: 14px; font-weight: 800;" id="cfgDriverName">Driver: --</div>
+        <div style="font-size: 12px; color: #94a3af; margin-top: 2px;" id="cfgBusNumber">Bus: --</div>
+        <a id="cfgCallBtn" href="tel:" class="call-btn">📞 Call Driver</a>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <button style="flex: 1; padding: 8px; background: #1e293b; color: #38bdf8; border: 1px solid #475569; border-radius: 10px; font-weight: 700; font-size: 11px; cursor: pointer;" onclick="openShiftSwitcher()">Change Shift/Route</button>
+        <button style="flex: 1; padding: 8px; background: #1e293b; color: #ef4444; border: 1px solid #475569; border-radius: 10px; font-weight: 700; font-size: 11px; cursor: pointer;" onclick="logoutEmployee()">Log Out</button>
+      </div>
+
+      <div style="font-size: 11px; font-weight: 800; color: #94a3af; text-transform: uppercase; margin-bottom: 8px;">Stops Sequence (Start ➔ Hitachi)</div>
+      <ul class="timeline" id="drawerStopsList"></ul>
+    </div>
+  </div>
+
+  <!-- Top App Bar -->
+  <div class="top-bar">
+    <button class="btn-icon" onclick="toggleDrawer(true)">☰</button>
+    <div class="badge-shift" onclick="openShiftSwitcher()">
+      <span>🔄</span> <span id="currentShiftText">SHIFT</span>
+    </div>
+    <div class="header-info-card">
+      <div>
+        <div class="route-disp" id="dispRouteTitle">Select Route</div>
+        <div class="speed-disp" id="dispSpeedSub">Connecting to GPS...</div>
+      </div>
+      <div id="liveStatusBadge" class="live-indicator live-off">OFFLINE</div>
+    </div>
+  </div>
+
+  <!-- Bottom Gradient Dashboard Card -->
+  <div class="bottom-card">
+    <div class="stop-select-wrapper">
+      <span style="font-size: 16px;">📍</span>
+      <select id="boardingStopSelect" onchange="onBoardingStopSelected()">
+        <option value="">Select Boarding Stop for Alarm Alert...</option>
+      </select>
+    </div>
+
+    <div class="passenger-dist-box" onclick="enablePassengerLocation()">
+      <div class="dist-lbl">🚶 My Real Distance to Bus:</div>
+      <div class="dist-val" id="myDistTxt">Tap: Turn On My Location</div>
+    </div>
+
+    <div class="metrics-row">
+      <div>
+        <div class="target-title">Next Approaching Stop</div>
+        <div class="target-stop-name" id="dispNextStop">Waiting for signal...</div>
+      </div>
+      <div class="eta-pill">
+        <div class="eta-mins" id="dispEtaMins">-- min</div>
+        <div class="eta-dist" id="dispEtaKm">-- km away</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-iOXJP2sF-dOsoIa0pwpB_Y6icYrgXGU",
+      authDomain: "hitachilivebus.firebaseapp.com",
+      databaseURL: "https://hitachilivebus-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "hitachilivebus",
+      storageBucket: "hitachilivebus.firebasestorage.app",
+      messagingSenderId: "260695885646",
+      appId: "1:260695885646:web:c7997f049dc3dee1f2801f",
+      measurementId: "G-VDG7P2MRPZ"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Map Setup with full gesture support for smooth zooming
+    const map = L.map('map', { zoomControl: false, maxZoom: 18 }).setView([13.2896471, 77.5701378], 13);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 18, attribution: 'Tiles &copy; Esri'
+    }).addTo(map);
+
+    let allRoutesMaster = {};
+    let activeRouteId = null;
+    let activeShift = "GENERAL";
+    let activeStops = [];
+    let currentStopIdx = 0;
+    let alertStopIdx = null;
+    let hasAlertFired = false;
+    let busMarker = null;
+    let userMarker = null;
+    let stopMarkers = [];
+    let busLat = null, busLng = null, busSpeed = 0;
+    let prevBusLat = null, prevBusLng = null;
+    let userLat = null, userLng = null;
+
+    // Realistic Large Top-View Bus SVG Icon
+    function createBusIcon(bearing = 0) {
+      return L.divIcon({
+        html: `
+          <div style="transform: rotate(${bearing}deg); transition: transform 0.4s ease-out; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 100 100" width="48" height="48">
+              <ellipse cx="50" cy="54" rx="22" ry="42" fill="rgba(0,0,0,0.4)" />
+              <rect x="30" y="8" width="40" height="84" rx="14" fill="#FBBF24" stroke="#000" stroke-width="3"/>
+              <rect x="30" y="44" width="40" height="10" fill="#dc2626" />
+              <rect x="34" y="14" width="32" height="15" rx="3" fill="#0f172a" />
+              <rect x="35" y="74" width="30" height="10" rx="2" fill="#0f172a" />
+              <rect x="24" y="20" width="6" height="12" rx="2" fill="#111827" />
+              <rect x="70" y="20" width="6" height="12" rx="2" fill="#111827" />
+              <rect x="40" y="32" width="20" height="30" rx="3" fill="#ffffff" stroke="#94a3af" stroke-width="1.5" />
+            </svg>
+          </div>
+        `,
+        className: '', iconSize: [48, 48], iconAnchor: [24, 24]
+      });
+    }
+
+    function toggleDrawer(open) {
+      document.getElementById('sideDrawer').classList.toggle('active', open);
+      document.getElementById('drawerOverlay').classList.toggle('active', open);
+    }
+
+    function showLoginView(isLogin) {
+      document.getElementById('registerModal').style.display = isLogin ? 'none' : 'flex';
+      document.getElementById('loginModal').style.display = isLogin ? 'flex' : 'none';
+      document.getElementById('regErr').innerText = '';
+      document.getElementById('loginErr').innerText = '';
+    }
+
+    // Load routes live from the existing Firebase routes_master node.
+    function routeLabel(routeId, route) {
+      const name = route.routeName || route.name || routeId;
+      const from = route.from || '';
+      const to = route.to || '';
+      return from || to ? `${name} (${from} ➔ ${to})` : name;
+    }
+
+    function fillRouteDropdown(id, placeholder) {
+      const select = document.getElementById(id);
+      if (!select) return;
+      const previous = select.value;
+      select.innerHTML = '';
+      const first = document.createElement('option');
+      first.value = '';
+      first.textContent = placeholder;
+      select.appendChild(first);
+      Object.entries(allRoutesMaster).forEach(([routeId, route]) => {
+        const option = document.createElement('option');
+        option.value = routeId;
+        option.textContent = routeLabel(routeId, route || {});
+        select.appendChild(option);
+      });
+      if (previous && allRoutesMaster[previous]) select.value = previous;
+    }
+
+    let routesReady = false;
+    db.ref('routes_master').on('value', (snap) => {
+      allRoutesMaster = snap.val() || {};
+      fillRouteDropdown('regRouteSelect', '-- Select Your Route --');
+      fillRouteDropdown('loginRouteSelect', '-- Select Your Route --');
+      fillRouteDropdown('userRouteSelect', '-- Select Your Route --');
+      routesReady = true;
+      checkEmployeeAuthSession();
+    }, (error) => {
+      ['regErr','loginErr','routeShiftErr'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = 'Unable to load routes. Please refresh or contact the transport administrator.';
+      });
+    });
+
+    function checkEmployeeAuthSession() {
+      const u = localStorage.getItem('hitachi_logged_user');
+      if (!u) {
+        showLoginView(false);
+      } else {
+        const user = JSON.parse(u);
+        const savedRoute = user.routeId || localStorage.getItem('hitachi_active_route');
+        const savedShift = localStorage.getItem('hitachi_active_shift') || 'GENERAL';
+        if (!savedRoute || !allRoutesMaster[savedRoute]) {
+          showLoginView(true);
+          document.getElementById('loginErr').innerText = 'Your registered route is unavailable. Please contact the transport administrator.';
+          return;
+        }
+        activeRouteId = savedRoute;
+        activeShift = user.shift || savedShift;
+        document.getElementById('userRouteSelect').value = savedRoute;
+        document.getElementById('userRouteSelect').disabled = true;
+        document.getElementById('userShiftSelect').value = activeShift;
+        document.getElementById('currentShiftText').innerText = activeShift;
+        if (!localStorage.getItem('hitachi_active_shift')) {
+          document.getElementById('routeShiftModal').style.display = 'flex';
+        } else {
+          loadActiveRoute();
+        }
+      }
+    }
+
+    async function submitRegistration() {
+      const empId = document.getElementById('regEmpId').value.trim().toUpperCase();
+      const name = document.getElementById('regName').value.trim();
+      const dept = document.getElementById('regDept').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const routeId = document.getElementById('regRouteSelect').value;
+      const err = document.getElementById('regErr');
+
+      if (!empId || !name || !dept || phone.length !== 10 || !/^\d{10}$/.test(phone) || !routeId) {
+        err.innerText = 'Please complete all fields, enter a valid 10-digit mobile number and select a route.';
+        return;
+      }
+      if (!allRoutesMaster[routeId]) {
+        err.innerText = 'Selected route is no longer available. Please select again.';
+        return;
+      }
+
+      err.innerText = 'Checking Employee ID...';
+      const uid = 'emp_' + empId.replace(/[^a-zA-Z0-9]/g, '_');
+      try {
+        const userRef = db.ref(`registered_users/${uid}`);
+        const existing = await userRef.once('value');
+        if (existing.exists()) {
+          err.innerText = 'This Employee ID is already registered. Please use Employee Login.';
+          return;
+        }
+        const uData = {
+          empId, name, department: dept, phone,
+          routeId,
+          routeName: allRoutesMaster[routeId].routeName || routeId,
+          registeredAt: Date.now()
+        };
+        await userRef.set(uData);
+        localStorage.setItem('hitachi_logged_user', JSON.stringify(uData));
+        localStorage.removeItem('hitachi_active_route');
+        localStorage.removeItem('hitachi_active_shift');
+        document.getElementById('registerModal').style.display = 'none';
+        document.getElementById('userRouteSelect').value = routeId;
+        document.getElementById('userRouteSelect').disabled = true;
+        document.getElementById('routeShiftModal').style.display = 'flex';
+      } catch (error) {
+        console.error('Registration failed:', error);
+        err.innerText = 'Registration failed. Check internet/Firebase access or contact the administrator.';
+      }
+    }
+
+    async function submitEmpLogin() {
+      const empId = document.getElementById('loginEmpId').value.trim().toUpperCase();
+      const selectedRouteId = document.getElementById('loginRouteSelect').value;
+      const err = document.getElementById('loginErr');
+      if (!empId || !selectedRouteId) {
+        err.innerText = 'Please enter your Employee ID and select your registered route.';
+        return;
+      }
+      if (!allRoutesMaster[selectedRouteId]) {
+        err.innerText = 'Selected route is not available. Please refresh and try again.';
+        return;
+      }
+
+      err.innerText = 'Verifying Employee ID and route...';
+      const uid = 'emp_' + empId.replace(/[^a-zA-Z0-9]/g, '_');
+      try {
+        const snap = await db.ref(`registered_users/${uid}`).once('value');
+        if (!snap.exists()) {
+          err.innerText = 'Employee ID not found. Please register or contact the administrator.';
+          return;
+        }
+        const uData = snap.val();
+        if (!uData.routeId) {
+          err.innerText = 'Your old employee record has no registered route. Please ask the transport administrator to update your route in Firebase.';
+          return;
+        }
+        if (uData.routeId !== selectedRouteId) {
+          err.innerText = 'The selected route does not match your registered route. Please select the correct route.';
+          return;
+        }
+        if (!allRoutesMaster[uData.routeId]) {
+          err.innerText = 'Your registered route is currently unavailable. Please contact the administrator.';
+          return;
+        }
+        localStorage.setItem('hitachi_logged_user', JSON.stringify(uData));
+        localStorage.setItem('hitachi_active_route', uData.routeId);
+        localStorage.removeItem('hitachi_active_shift');
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('userRouteSelect').value = uData.routeId;
+        document.getElementById('userRouteSelect').disabled = true;
+        document.getElementById('routeShiftModal').style.display = 'flex';
+      } catch (error) {
+        console.error('Login failed:', error);
+        err.innerText = 'Login could not connect to Firebase. Please check your internet and try again.';
+      }
+    }
+
+    function openShiftSwitcher() {
+      document.getElementById('routeShiftModal').style.display = 'flex';
+      toggleDrawer(false);
+    }
+
+    function logoutEmployee() {
+      if (confirm("Do you want to log out of this device?")) {
+        localStorage.removeItem('hitachi_logged_user');
+        localStorage.removeItem('hitachi_active_route');
+        localStorage.removeItem('hitachi_active_shift');
+        location.reload();
+      }
+    }
+
+    function applyRouteAndShift() {
+      const loggedUser = JSON.parse(localStorage.getItem('hitachi_logged_user') || '{}');
+      const rId = loggedUser.routeId || document.getElementById('userRouteSelect').value;
+      const sh = document.getElementById('userShiftSelect').value;
+      const err = document.getElementById('routeShiftErr');
+
+      if (!rId || !sh) {
+        err.innerText = "Please choose both Route and Commute Shift.";
+        return;
+      }
+
+      if (!allRoutesMaster[rId]) { err.innerText = 'Your registered route is not available. Please contact the administrator.'; return; }
+      activeRouteId = rId;
+      activeShift = sh;
+      localStorage.setItem('hitachi_active_route', rId);
+      localStorage.setItem('hitachi_active_shift', sh);
+      document.getElementById('currentShiftText').innerText = sh;
+      document.getElementById('routeShiftModal').style.display = 'none';
+
+      loadActiveRoute();
+
+      const u = JSON.parse(localStorage.getItem('hitachi_logged_user') || '{}');
+      const hour = new Date().getHours();
+      const greeting = hour < 12 ? "Good Morning" : (hour < 17 ? "Good Afternoon" : "Good Evening");
+      showPopAlert("☀️", `${greeting} ${u.name || 'Sir'}!`, `Your route is set to <b>${allRoutesMaster[rId].routeName}</b> (${sh}). Live tracking is active.`);
+    }
+
+    function loadActiveRoute() {
+      const r = allRoutesMaster[activeRouteId];
+      if (!r) return;
+
+      document.getElementById('dispRouteTitle').innerText = r.routeName || activeRouteId;
+      document.getElementById('drawerRouteName').innerText = r.routeName || activeRouteId;
+      document.getElementById('cfgDriverName').innerText = "Driver: " + (r.driverName || "Assigned Driver");
+      document.getElementById('cfgBusNumber').innerText = "Bus: " + (r.busNumber || "--");
+      document.getElementById('cfgCallBtn').href = "tel:" + (r.driverPhone || "");
+
+      activeStops = r.stops || [];
+      currentStopIdx = 0;
+      alertStopIdx = null;
+      hasAlertFired = false;
+
+      stopMarkers.forEach(m => map.removeLayer(m));
+      stopMarkers = [];
+
+      const dropSelect = document.getElementById('boardingStopSelect');
+      const drawerList = document.getElementById('drawerStopsList');
+      dropSelect.innerHTML = '<option value="">Select Boarding Stop for Alarm Alert...</option>';
+      drawerList.innerHTML = '';
+
+      activeStops.forEach((st, idx) => {
+        const isDest = (idx === activeStops.length - 1);
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = `${st.name} (${st.time || '--'})`;
+        dropSelect.appendChild(opt);
+
+        const li = document.createElement('li');
+        li.className = 'timeline-item' + (isDest ? ' dest' : '');
+        li.innerHTML = `<strong>${st.name}</strong><br><small style="color:#94a3af;">Schedule: ${st.time || '--'}</small>`;
+        drawerList.appendChild(li);
+
+        const m = L.circleMarker([st.lat, st.lng], {
+          radius: isDest ? 8 : 6,
+          color: isDest ? '#ef4444' : '#38bdf8',
+          fillColor: '#000', fillOpacity: 1, weight: 3
+        }).bindTooltip(`<b>${st.name}</b>`, {
+          permanent: true, direction: 'top', offset: [0, -8],
+          className: 'stop-badge' + (isDest ? ' dest' : '')
+        }).addTo(map);
+
+        stopMarkers.push(m);
+      });
+
+      if (activeStops.length > 0) {
+        map.setView([activeStops[0].lat, activeStops[0].lng], 13);
+        document.getElementById('dispNextStop').innerText = activeStops[0].name;
+      }
+
+      listenToBusGpsStream();
+    }
+
+    function calcBearing(lat1, lon1, lat2, lon2) {
+      const y = Math.sin((lon2 - lon1) * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180);
+      const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
+                Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos((lon2 - lon1) * Math.PI / 180);
+      return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+    }
+
+    function getDistanceMeters(lat1, lon1, lat2, lon2) {
+      const R = 6371e3;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    let busWatcherRef = null;
+    function listenToBusGpsStream() {
+      if (busWatcherRef) busWatcherRef.off();
+
+      busWatcherRef = db.ref(`live_bus/${activeRouteId}`);
+      busWatcherRef.on('value', (snap) => {
+        const bus = snap.val();
+        const badge = document.getElementById('liveStatusBadge');
+        const speedTxt = document.getElementById('dispSpeedSub');
+        const now = Date.now();
+
+        // Stale Heartbeat Check: 20 seconds no signal = OFFLINE
+        const isFresh = bus && bus.updatedAt && (now - bus.updatedAt < 20000);
+
+        if (!bus || !bus.isActive || !isFresh || (bus.activeShift && bus.activeShift !== activeShift)) {
+          badge.className = "live-indicator live-off";
+          badge.innerText = "OFFLINE";
+          speedTxt.innerText = "Bus halted / Driver offline";
+          if (busMarker) busMarker.setOpacity(0.35);
+          return;
+        }
+
+        badge.className = "live-indicator live-on";
+        badge.innerText = "LIVE";
+        busLat = bus.latitude;
+        busLng = bus.longitude;
+        busSpeed = bus.speed || 0;
+        speedTxt.innerText = `Speed: ${busSpeed} km/h`;
+
+        let bearing = 0;
+        if (prevBusLat !== null && prevBusLng !== null) {
+          bearing = calcBearing(prevBusLat, prevBusLng, busLat, busLng);
+        }
+        prevBusLat = busLat;
+        prevBusLng = busLng;
+
+        const pos = [busLat, busLng];
+        if (!busMarker) {
+          busMarker = L.marker(pos, { icon: createBusIcon(bearing) }).addTo(map);
+        } else {
+          busMarker.setOpacity(1);
+          busMarker.setLatLng(pos);
+          busMarker.setIcon(createBusIcon(bearing));
+        }
+
+        updateNextStopAndAlarm(busLat, busLng);
+        calcPassengerRoadDistance();
+      });
+    }
+
+    function updateNextStopAndAlarm(lat, lng) {
+      if (activeStops.length === 0) return;
+      const target = activeStops[currentStopIdx];
+      const dist = getDistanceMeters(lat, lng, target.lat, target.lng);
+
+      if (dist < 120 && currentStopIdx < activeStops.length - 1) {
+        currentStopIdx++;
+      }
+
+      const activeTarget = activeStops[currentStopIdx];
+      document.getElementById('dispNextStop').innerText = activeTarget.name;
+
+      const km = (dist / 1000).toFixed(1);
+      const speed = busSpeed > 5 ? busSpeed : 25;
+      const mins = Math.max(1, Math.round((km / speed) * 60));
+      document.getElementById('dispEtaMins').innerText = `~${mins} min`;
+      document.getElementById('dispEtaKm').innerText = `${km} km away`;
+
+      // 1-Minute Pop-up Alarm
+      if (alertStopIdx !== null && !hasAlertFired) {
+        const myStop = activeStops[alertStopIdx];
+        const myDist = getDistanceMeters(lat, lng, myStop.lat, myStop.lng);
+        const myMins = (myDist / 1000) / speed * 60;
+
+        if (myDist <= 350 || myMins <= 1.0) {
+          hasAlertFired = true;
+          triggerOneMinuteArrivalAlarm(myStop.name);
+        }
+      }
+    }
+
+    function onBoardingStopSelected() {
+      const val = document.getElementById('boardingStopSelect').value;
+      alertStopIdx = val !== "" ? parseInt(val) : null;
+      hasAlertFired = false;
+      if (alertStopIdx !== null) {
+        const stopName = activeStops[alertStopIdx].name;
+        showPopAlert("🔔", "Boarding Stop Alert Set", `You will receive a 1-minute arrival pop-up alert when the bus approaches <b>${stopName}</b>.`);
+        if ("Notification" in window && Notification.permission !== "granted") {
+          Notification.requestPermission();
+        }
+      }
+    }
+
+    function triggerOneMinuteArrivalAlarm(stopName) {
+      playChimeAudio();
+      if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
+
+      showPopAlert("🚌", "Bus Arriving in ~1 Minute!", `Attention! Your Hitachi bus is reaching <b>${stopName}</b>. Please be at your boarding point ready to board.`);
+
+      if ("speechSynthesis" in window) {
+        const utter = new SpeechSynthesisUtterance(`Attention please. Your Hitachi Bus is arriving at ${stopName} in one minute.`);
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function playChimeAudio() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + 0.35);
+      } catch (e) {}
+    }
+
+    function showPopAlert(icon, title, bodyHtml) {
+      document.getElementById('popIcon').innerText = icon;
+      document.getElementById('popTitle').innerText = title;
+      document.getElementById('popBody').innerHTML = bodyHtml;
+      document.getElementById('centerPopModal').classList.add('show');
+    }
+
+    function closePopAlert() {
+      document.getElementById('centerPopModal').classList.remove('show');
+    }
+
+    function enablePassengerLocation() {
+      if (!navigator.geolocation) {
+        document.getElementById('myDistTxt').innerText = "GPS Not Supported";
+        return;
+      }
+      document.getElementById('myDistTxt').innerText = "Locating GPS...";
+      navigator.geolocation.watchPosition((pos) => {
+        userLat = pos.coords.latitude;
+        userLng = pos.coords.longitude;
+        if (!userMarker) {
+          const userDot = L.divIcon({
+            html: '<div style="width:16px;height:16px;border-radius:50%;background:#38bdf8;border:3px solid #fff;box-shadow:0 0 10px #38bdf8;"></div>',
+            iconAnchor: [8, 8]
+          });
+          userMarker = L.marker([userLat, userLng], { icon: userDot }).addTo(map).bindPopup("You Are Here");
+        } else {
+          userMarker.setLatLng([userLat, userLng]);
+        }
+        calcPassengerRoadDistance();
+      }, (err) => {
+        document.getElementById('myDistTxt').innerText = "Location Denied / Error";
+      }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+    }
+
+    function calcPassengerRoadDistance() {
+      if (!userLat || !userLng || !busLat || !busLng) return;
+      const d = (getDistanceMeters(userLat, userLng, busLat, busLng) / 1000).toFixed(1);
+      document.getElementById('myDistTxt').innerText = `${d} km away from bus`;
+    }
+  </script>
 </body>
 </html>
