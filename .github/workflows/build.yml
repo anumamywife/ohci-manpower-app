@@ -68,10 +68,11 @@ jobs:
           APKSIGNER=$(find $ANDROID_SDK_ROOT/build-tools/ -name apksigner | sort -V | tail -n 1)
           echo "Using apksigner at: $APKSIGNER"
           
-          # Using stdin passing via env to avoid special character breakage
-          printf "%s\n%s\n" "$KS_PASS" "$KS_PASS" | "$APKSIGNER" sign \
+          "$APKSIGNER" sign \
             --ks release-key.jks \
             --ks-key-alias "$KS_ALIAS" \
+            --ks-pass env:KS_PASS \
+            --key-pass env:KS_PASS \
             --out app-release.apk \
             "$UNSIGNED_APK"
           
