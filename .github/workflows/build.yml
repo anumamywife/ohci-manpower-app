@@ -40,7 +40,7 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | grep -v -- '-----' | base64 -d > release-key.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | grep -v -- '-----' | tr -d '\r\n ' | base64 -d > release-key.jks
 
       - name: Build APK with Gradle
         run: |
@@ -51,7 +51,7 @@ jobs:
       - name: Sign APK
         run: |
           APK_FILE=$(find android/app/build/outputs/apk/ -name "*.apk" | head -n 1)
-          echo "Signing APK: $APK_FILE"
+          echo "Found APK: $APK_FILE"
           $ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner sign \
             --ks release-key.jks \
             --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
@@ -59,6 +59,7 @@ jobs:
             --key-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
             --out app-release.apk \
             "$APK_FILE"
+          $ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner verify app-release.apk
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
