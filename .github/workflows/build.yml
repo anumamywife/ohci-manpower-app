@@ -38,28 +38,25 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Decode Keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | grep -v -- '-----' | tr -d '\r\n ' | base64 -d > release-key.jks
-
       - name: Build APK with Gradle
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease || ./gradlew assembleDebug
+          ./gradlew assembleRelease
 
       - name: Sign APK
+        uses: rigney/sign-android-release-action@v1
+        id: sign_app
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEYSTORE_PASSWORD }}
+
+      - name: Rename Signed APK
         run: |
-          APK_FILE=$(find android/app/build/outputs/apk/ -name "*.apk" | head -n 1)
-          echo "Found APK: $APK_FILE"
-          $ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner sign \
-            --ks release-key.jks \
-            --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
-            --ks-key-alias ${{ secrets.KEY_ALIAS }} \
-            --key-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
-            --out app-release.apk \
-            "$APK_FILE"
-          $ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner verify app-release.apk
+          cp ${{ steps.sign_app.outputs.signedFile }} app-release.apk
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
