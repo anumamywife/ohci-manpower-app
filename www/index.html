@@ -274,7 +274,7 @@
 
     .top-bar > * { pointer-events: auto; }
 
-    .btn-icon, .badge-shift, .header-info-card {
+    .badge-shift, .header-info-card {
       background: rgba(11, 18, 32, 0.92);
       border: 1px solid var(--ohci-border);
       backdrop-filter: blur(14px);
@@ -282,23 +282,60 @@
       box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
     }
 
+    /* ENHANCED MODERN MENU BUTTON */
     .btn-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 13px;
-      color: #fff;
-      font-size: 18px;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      color: #ffffff;
+      background: linear-gradient(145deg, rgba(22, 32, 51, 0.96) 0%, rgba(10, 16, 29, 0.92) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       flex-shrink: 0;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-icon:hover {
+      border-color: rgba(229, 57, 53, 0.6);
+      box-shadow: 0 10px 28px rgba(229, 57, 53, 0.22);
+    }
+
+    .btn-icon:active {
+      transform: scale(0.93);
+    }
+
+    .menu-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-start;
+    }
+
+    .menu-bar {
+      height: 2px;
+      background: #f8fafc;
+      border-radius: 999px;
+      transition: width 0.2s ease;
+    }
+
+    .menu-bar.bar-top { width: 18px; }
+    .menu-bar.bar-mid { width: 13px; background: #38bdf8; }
+    .menu-bar.bar-bot { width: 16px; }
+
+    .btn-icon:hover .menu-bar.bar-mid {
+      width: 18px;
     }
 
     .badge-shift {
-      height: 42px;
+      height: 44px;
       padding: 0 11px;
-      border-radius: 13px;
+      border-radius: 14px;
       color: #ff8580;
       font-size: 10.5px;
       font-weight: 800;
@@ -313,7 +350,7 @@
       flex: 1;
       min-width: 0;
       overflow: hidden;
-      height: 42px;
+      height: 44px;
       padding: 5px 12px;
       border-radius: 14px;
       display: flex;
@@ -426,7 +463,6 @@
       color: #fff;
     }
 
-    /* 3-Column Square Metrics Grid Fully Contained Inside Bottom Card */
     .metrics-grid-3 {
       display: grid;
       grid-template-columns: 0.9fr 0.9fr 1.3fr;
@@ -487,7 +523,6 @@
       text-overflow: ellipsis;
     }
 
-    /* Redesigned Red Card Box Inside Grid (No Overflow) */
     .eta-box {
       background: linear-gradient(135deg, #e53935 0%, #991b1b 100%);
       border: none;
@@ -507,137 +542,223 @@
       color: rgba(255, 255, 255, 0.9);
     }
 
-    /* ===== SIDE DRAWER ===== */
+    /* ===== ULTRA-MODERN SIDE DRAWER UI ===== */
     .drawer-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(2, 6, 14, 0.72);
+      background: rgba(3, 7, 18, 0.82);
       z-index: 2500;
       display: none;
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
-    .drawer-overlay.active { display: block; }
+    .drawer-overlay.active {
+      display: block;
+      opacity: 1;
+    }
 
     .side-drawer {
       position: fixed;
       top: 0;
-      left: -320px;
-      width: 295px;
+      left: -335px;
+      width: 315px;
+      max-width: 86vw;
       height: 100dvh;
-      background: linear-gradient(180deg, #131d31 0%, #080d18 100%);
-      border-right: 1px solid var(--ohci-border);
+      background: linear-gradient(180deg, #111a2e 0%, #080d18 100%);
+      border-right: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 15px 0 50px rgba(0, 0, 0, 0.8);
       z-index: 2600;
-      transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: left 0.32s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
     .side-drawer.active { left: 0; }
 
     .drawer-top {
-      background: linear-gradient(130deg, #e53935 0%, #7f1d1d 100%);
-      padding: 24px 18px 18px;
-      color: #fff;
       position: relative;
+      padding: 24px 20px 20px;
+      background: linear-gradient(140deg, #dc2626 0%, #991b1b 70%, #7f1d1d 100%);
+      color: #fff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 8px 24px rgba(220, 38, 38, 0.28);
+    }
+
+    .drawer-top::after {
+      content: "";
+      position: absolute;
+      top: -40px;
+      right: -20px;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+      pointer-events: none;
     }
 
     .drawer-close {
       position: absolute;
-      top: 16px;
-      right: 14px;
-      width: 30px;
-      height: 30px;
-      border-radius: 9px;
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      top: 18px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.24);
       color: #fff;
-      font-size: 15px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 2;
+    }
+
+    .drawer-close:active {
+      transform: scale(0.9);
+      background: rgba(0, 0, 0, 0.5);
     }
 
     .drawer-content {
-      padding: 16px;
+      padding: 18px 16px 24px;
       overflow-y: auto;
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
+    .drawer-content::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .drawer-content::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+
+    /* Driver Glass Panel */
     .driver-info-panel {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.11);
-      padding: 12px;
-      border-radius: 14px;
-      margin-bottom: 12px;
+      background: linear-gradient(155deg, rgba(26, 38, 61, 0.7) 0%, rgba(13, 22, 38, 0.85) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      padding: 14px 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(10px);
     }
 
     .call-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      margin-top: 8px;
-      padding: 7px 13px;
-      background: #22c55e;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+      padding: 9px 14px;
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
       color: #fff;
       text-decoration: none;
-      border-radius: 10px;
-      font-size: 11.5px;
+      border-radius: 12px;
+      font-size: 12px;
       font-weight: 800;
+      letter-spacing: 0.3px;
+      box-shadow: 0 6px 16px rgba(34, 197, 94, 0.3);
+      transition: transform 0.15s ease, filter 0.15s ease;
     }
 
+    .call-btn:active {
+      transform: scale(0.97);
+      filter: brightness(0.92);
+    }
+
+    /* Action Buttons */
     .drawer-actions {
       display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
+      gap: 10px;
     }
 
     .btn-drawer-action {
       flex: 1;
-      padding: 9px 6px;
-      background: rgba(30, 41, 59, 0.75);
+      padding: 11px 8px;
+      background: rgba(22, 32, 53, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 10px;
+      border-radius: 12px;
       font-weight: 700;
-      font-size: 11px;
+      font-size: 11.5px;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
     }
 
-    .btn-drawer-action.switch { color: #38bdf8; }
-    .btn-drawer-action.logout { color: #f87171; }
+    .btn-drawer-action.switch {
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.28);
+    }
+
+    .btn-drawer-action.logout {
+      color: #f87171;
+      border-color: rgba(248, 113, 113, 0.28);
+    }
+
+    .btn-drawer-action:active {
+      transform: scale(0.96);
+      filter: brightness(1.15);
+    }
+
+    /* Stops Section */
+    .drawer-stops-section {
+      background: rgba(11, 18, 32, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 14px 14px 6px;
+    }
 
     .timeline {
       list-style: none;
       padding: 0;
-      margin: 8px 0;
+      margin: 10px 0 4px;
     }
 
     .timeline-item {
       position: relative;
-      padding-left: 20px;
-      margin-bottom: 13px;
-      font-size: 12px;
+      padding-left: 24px;
+      margin-bottom: 15px;
+      font-size: 12.5px;
     }
 
     .timeline-item::before {
       content: '';
       position: absolute;
-      left: 4px;
+      left: 2px;
       top: 4px;
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background: #38bdf8;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+      border: 2px solid #0f172a;
     }
 
-    .timeline-item.dest::before { background: #ef4444; }
+    .timeline-item.dest::before {
+      background: #ef4444;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+    }
 
     .timeline-item::after {
       content: '';
       position: absolute;
-      left: 7px;
-      top: 15px;
-      bottom: -13px;
+      left: 6px;
+      top: 16px;
+      bottom: -15px;
       width: 2px;
-      background: rgba(255, 255, 255, 0.12);
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
     }
 
     .timeline-item:last-child::after { display: none; }
@@ -825,15 +946,22 @@
   <div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div>
   <div id="sideDrawer" class="side-drawer">
     <div class="drawer-top">
-      <button class="drawer-close" onclick="toggleDrawer(false)">✕</button>
-      <div style="font-size: 9px; font-weight: 800; letter-spacing: 1.4px; opacity: 0.85; margin-bottom: 3px;">OHCI MANPOWER TRANSPORT</div>
-      <h3 style="margin: 0 0 2px 0; font-family: 'Manrope', sans-serif; font-size: 18px;">Hitachi Transport</h3>
-      <small id="drawerRouteName" style="opacity: 0.9; font-weight: 600;">Route Overview</small>
+      <button class="drawer-close" onclick="toggleDrawer(false)" aria-label="Close menu">✕</button>
+      <div style="font-size: 9px; font-weight: 800; letter-spacing: 1.4px; opacity: 0.9; margin-bottom: 4px; text-transform: uppercase;">OHCI • MANPOWER TRANSPORT</div>
+      <h3 style="margin: 0 0 4px 0; font-family: 'Manrope', sans-serif; font-size: 19px; font-weight: 800; letter-spacing: -0.3px;">Hitachi Transport</h3>
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span style="font-size: 11px;">📍</span>
+        <span id="drawerRouteName" style="font-size: 11px; opacity: 0.95; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Route Overview</span>
+      </div>
     </div>
+
     <div class="drawer-content">
       <div class="driver-info-panel">
-        <div style="font-size: 13.5px; font-weight: 800; color: #fff;" id="cfgDriverName">Driver: --</div>
-        <div style="font-size: 11.5px; color: #94a3b8; margin-top: 2px; font-weight: 600;" id="cfgBusNumber">Bus: --</div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+          <div style="font-size: 13.5px; font-weight: 800; color: #fff;" id="cfgDriverName">Driver: --</div>
+          <span style="font-size: 9px; font-weight: 800; color: #38bdf8; background: rgba(56, 189, 248, 0.12); padding: 2px 7px; border-radius: 999px; border: 1px solid rgba(56, 189, 248, 0.25);">OPERATOR</span>
+        </div>
+        <div style="font-size: 11.5px; color: #94a3b8; font-weight: 600;" id="cfgBusNumber">Bus: --</div>
         <a id="cfgCallBtn" href="tel:" class="call-btn">📞 Call Bus Driver</a>
       </div>
 
@@ -842,14 +970,25 @@
         <button class="btn-drawer-action logout" onclick="logoutEmployee()">🚪 Log Out</button>
       </div>
 
-      <div style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;" id="drawerTimelineTitle">Stops Sequence</div>
-      <ul class="timeline" id="drawerStopsList"></ul>
+      <div class="drawer-stops-section">
+        <div style="font-size: 9.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; justify-content: space-between;" id="drawerTimelineTitle">
+          <span>Stops Sequence</span>
+          <span style="font-size: 10px;">🚏</span>
+        </div>
+        <ul class="timeline" id="drawerStopsList"></ul>
+      </div>
     </div>
   </div>
 
   <!-- Top App Bar -->
   <div class="top-bar">
-    <button class="btn-icon" onclick="toggleDrawer(true)" title="Menu">☰</button>
+    <button class="btn-icon" onclick="toggleDrawer(true)" title="Menu" aria-label="Open menu">
+      <div class="menu-bars">
+        <span class="menu-bar bar-top"></span>
+        <span class="menu-bar bar-mid"></span>
+        <span class="menu-bar bar-bot"></span>
+      </div>
+    </button>
     <div class="badge-shift" onclick="openShiftSwitcher()" title="Change Shift">
       <span>🔄</span> <span id="currentShiftText">SHIFT</span>
     </div>
@@ -871,7 +1010,7 @@
       </select>
     </div>
 
-    <!-- 3 Square Boxes Grid: Live Distance, Speed, & Next Stop ETA (Redesigned inside black card) -->
+    <!-- 3 Square Boxes Grid: Live Distance, Speed, & Next Stop ETA -->
     <div class="metrics-grid-3">
       <!-- 1. Real Live Distance to Bus -->
       <div class="metric-box" onclick="enablePassengerLocation()" title="Tap to locate GPS">
@@ -1254,10 +1393,10 @@
       
       if (activeShift === "SHIFT_2") {
         activeStops = [...rawStops].reverse();
-        document.getElementById('drawerTimelineTitle').innerText = "Stops Sequence (Hitachi ➔ Return)";
+        document.getElementById('drawerTimelineTitle').querySelector('span').innerText = "Stops Sequence (Hitachi ➔ Return)";
       } else {
         activeStops = [...rawStops];
-        document.getElementById('drawerTimelineTitle').innerText = "Stops Sequence (Start ➔ Hitachi)";
+        document.getElementById('drawerTimelineTitle').querySelector('span').innerText = "Stops Sequence (Start ➔ Hitachi)";
       }
 
       currentStopIdx = 0;
