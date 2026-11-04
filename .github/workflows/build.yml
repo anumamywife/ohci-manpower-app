@@ -85,12 +85,12 @@ jobs:
           path: app-release.apk
 
       - name: Release APK to GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
           files: app-release.apk
-          tag_name: "1.01"
-          name: "Release v1.01"
+          tag_name: "v1.0.${{ github.run_number }}"
+          name: "Release v1.0.${{ github.run_number }}"
           draft: false
           prerelease: false
         env:
