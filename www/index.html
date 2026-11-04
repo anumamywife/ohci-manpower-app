@@ -62,7 +62,7 @@
       background: #0b1220;
     }
 
-    /* ===== NATIVE APP STYLE AUTH & ROUTE MODALS ===== */
+    /* ===== MODALS ===== */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -100,7 +100,6 @@
       to { transform: translateY(0) scale(1); opacity: 1; }
     }
 
-    /* Compact Header Row Inside Card */
     .card-top-bar {
       display: flex;
       align-items: center;
@@ -153,7 +152,6 @@
       font-weight: 500;
     }
 
-    /* 2-Column Grid for Balanced Aspect Ratio on Mobile */
     .form-grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -314,6 +312,7 @@
     .header-info-card {
       flex: 1;
       min-width: 0;
+      overflow: hidden;
       height: 42px;
       padding: 5px 12px;
       border-radius: 14px;
@@ -331,6 +330,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 150px;
     }
 
     .speed-disp {
@@ -378,7 +378,7 @@
       border: 1px solid rgba(239, 68, 68, 0.4);
     }
 
-    /* ===== BOTTOM DASHBOARD CARD ===== */
+    /* ===== UNIFIED BOTTOM DASHBOARD CARD ===== */
     .bottom-card {
       position: absolute;
       bottom: max(12px, env(safe-area-inset-bottom, 12px));
@@ -388,16 +388,16 @@
       margin: 0 auto;
       background: linear-gradient(160deg, rgba(20, 30, 48, 0.96) 0%, rgba(8, 13, 24, 0.98) 100%);
       border: 1px solid var(--ohci-border);
-      border-top: 2px solid var(--ohci-red);
+      border-top: 2.5px solid var(--ohci-red);
       border-radius: 20px;
       padding: 12px 14px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       z-index: 1100;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 9px;
     }
 
     .stop-select-wrapper {
@@ -426,75 +426,85 @@
       color: #fff;
     }
 
-    .passenger-dist-box {
+    /* 3-Column Square Metrics Grid Fully Contained Inside Bottom Card */
+    .metrics-grid-3 {
+      display: grid;
+      grid-template-columns: 0.9fr 0.9fr 1.3fr;
+      gap: 7px;
+      width: 100%;
+    }
+
+    .metric-box {
       background: rgba(6, 11, 22, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 8px 11px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
+      padding: 8px 8px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      justify-content: center;
       cursor: pointer;
+      transition: border-color 0.18s ease;
+      min-width: 0;
     }
 
-    .dist-lbl {
-      font-size: 11px;
-      color: #cbd5e1;
-      font-weight: 600;
+    .metric-box:active {
+      border-color: var(--ohci-accent);
     }
 
-    .dist-val {
-      font-size: 12px;
-      color: #38bdf8;
-      font-weight: 800;
-    }
-
-    .metrics-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .target-title {
-      font-size: 9px;
+    .metric-title {
+      font-size: 8px;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: #94a3b8;
+      letter-spacing: 0.5px;
+      color: var(--ohci-muted);
       margin-bottom: 2px;
-    }
-
-    .target-stop-name {
-      font-family: "Manrope", sans-serif;
-      font-size: 13.5px;
-      font-weight: 800;
-      color: #ffffff;
-      max-width: 210px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .eta-pill {
-      color: #ffffff;
-      background: linear-gradient(135deg, #e53935 0%, #991b1b 100%);
-      border-radius: 12px;
-      padding: 6px 12px;
-      text-align: right;
-      flex-shrink: 0;
-    }
-
-    .eta-mins {
+    .metric-value {
       font-family: "Manrope", sans-serif;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
+      color: var(--ohci-accent);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .eta-dist {
-      font-size: 9px;
-      color: rgba(255, 255, 255, 0.85);
+    .metric-value.highlight {
+      color: #4ade80;
+    }
+
+    .metric-sub {
+      font-size: 8px;
+      color: rgba(255, 255, 255, 0.7);
       font-weight: 700;
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Redesigned Red Card Box Inside Grid (No Overflow) */
+    .eta-box {
+      background: linear-gradient(135deg, #e53935 0%, #991b1b 100%);
+      border: none;
+      padding: 8px 10px;
+    }
+
+    .eta-box .metric-title {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .eta-box .metric-value {
+      color: #ffffff;
+      font-size: 12.5px;
+    }
+
+    .eta-box .metric-sub {
+      color: rgba(255, 255, 255, 0.9);
     }
 
     /* ===== SIDE DRAWER ===== */
@@ -688,21 +698,11 @@
       border-color: #ef4444;
       color: #fca5a5;
     }
-
-    /* Small Screen Compact Tweaks */
-    @media (max-height: 680px) {
-      .modal-card { padding: 16px 15px 14px; }
-      .modal-card h2 { font-size: 18px; }
-      .modal-card p { margin-bottom: 10px; font-size: 11px; }
-      .input-field, .select-field { height: 39px; font-size: 12.5px; }
-      .form-group, .form-grid-2 { margin-bottom: 8px; }
-      .btn-primary { height: 41px; }
-    }
   </style>
 </head>
 <body>
 
-  <!-- Modal 1: Employee Registration (Compact Mobile-First Ratio) -->
+  <!-- Modal 1: Employee Registration -->
   <div id="registerModal" class="modal-overlay" style="display: none;">
     <div class="modal-card">
       <div class="card-top-bar">
@@ -712,7 +712,6 @@
       <h2>Employee Registration</h2>
       <p>One-time setup to link your Employee ID with live bus tracking.</p>
 
-      <!-- Side-by-Side Row for ID & Dept to keep card ratio compact -->
       <div class="form-grid-2">
         <div class="form-group">
           <label class="form-label" for="regEmpId">Employee ID</label>
@@ -801,9 +800,9 @@
       <div class="form-group">
         <label class="form-label" for="userShiftSelect">Shift Schedule</label>
         <select id="userShiftSelect" class="select-field">
-          <option value="GENERAL">General Shift</option>
-          <option value="SHIFT_1">Shift 1 (Morning Commute)</option>
-          <option value="SHIFT_2">Shift 2 (Afternoon Commute)</option>
+          <option value="GENERAL">General Shift (Morning Inbound)</option>
+          <option value="SHIFT_1">Shift 1 (Morning Inbound)</option>
+          <option value="SHIFT_2">Shift 2 (Evening Return / Outbound)</option>
         </select>
       </div>
 
@@ -843,7 +842,7 @@
         <button class="btn-drawer-action logout" onclick="logoutEmployee()">🚪 Log Out</button>
       </div>
 
-      <div style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;">Stops Sequence (Start ➔ Hitachi)</div>
+      <div style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;" id="drawerTimelineTitle">Stops Sequence</div>
       <ul class="timeline" id="drawerStopsList"></ul>
     </div>
   </div>
@@ -863,7 +862,7 @@
     </div>
   </div>
 
-  <!-- Bottom Dashboard Card -->
+  <!-- Unified Bottom Dashboard Card with Integrated Metrics Grid (No Overlap) -->
   <div class="bottom-card">
     <div class="stop-select-wrapper">
       <span style="font-size: 15px;">📍</span>
@@ -872,19 +871,27 @@
       </select>
     </div>
 
-    <div class="passenger-dist-box" onclick="enablePassengerLocation()">
-      <div class="dist-lbl">🚶 My Real Distance to Bus:</div>
-      <div class="dist-val" id="myDistTxt">Tap: Turn On My Location</div>
-    </div>
-
-    <div class="metrics-row">
-      <div style="min-width: 0;">
-        <div class="target-title">Next Approaching Stop</div>
-        <div class="target-stop-name" id="dispNextStop">Waiting for signal...</div>
+    <!-- 3 Square Boxes Grid: Live Distance, Speed, & Next Stop ETA (Redesigned inside black card) -->
+    <div class="metrics-grid-3">
+      <!-- 1. Real Live Distance to Bus -->
+      <div class="metric-box" onclick="enablePassengerLocation()" title="Tap to locate GPS">
+        <div class="metric-title">🚶 Bus Dist</div>
+        <div class="metric-value" id="myDistTxt">Locate</div>
+        <div class="metric-sub" id="myDistSub">Tap GPS</div>
       </div>
-      <div class="eta-pill">
-        <div class="eta-mins" id="dispEtaMins">-- min</div>
-        <div class="eta-dist" id="dispEtaKm">-- km away</div>
+
+      <!-- 2. Current Bus Speed -->
+      <div class="metric-box">
+        <div class="metric-title">⚡ Bus Speed</div>
+        <div class="metric-value highlight" id="cardSpeedTxt">0 km/h</div>
+        <div class="metric-sub">Live Telemetry</div>
+      </div>
+
+      <!-- 3. Next Stop & ETA Time (Red Card Box Inside Grid) -->
+      <div class="metric-box eta-box">
+        <div class="metric-title" id="dispNextStop">Next Stop</div>
+        <div class="metric-value" id="dispEtaMins">-- min</div>
+        <div class="metric-sub" id="dispEtaKm">-- km away</div>
       </div>
     </div>
   </div>
@@ -930,23 +937,28 @@
     let userLat = null, userLng = null;
     let passengerWatchId = null;
 
+    // Ultra-Modern Realistic Corporate Bus SVG Icon
     function createBusIcon(bearing = 0) {
       return L.divIcon({
         html: `
-          <div style="transform: rotate(${bearing}deg); transition: transform 0.4s ease-out; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 100 100" width="48" height="48">
-              <ellipse cx="50" cy="54" rx="22" ry="42" fill="rgba(0,0,0,0.45)" />
-              <rect x="30" y="8" width="40" height="84" rx="14" fill="#FBBF24" stroke="#000" stroke-width="3"/>
-              <rect x="30" y="44" width="40" height="10" fill="#dc2626" />
-              <rect x="34" y="14" width="32" height="15" rx="3" fill="#0f172a" />
-              <rect x="35" y="74" width="30" height="10" rx="2" fill="#0f172a" />
-              <rect x="24" y="20" width="6" height="12" rx="2" fill="#111827" />
-              <rect x="70" y="20" width="6" height="12" rx="2" fill="#111827" />
-              <rect x="40" y="32" width="20" height="30" rx="3" fill="#ffffff" stroke="#94a3af" stroke-width="1.5" />
+          <div style="transform: rotate(${bearing}deg); transition: transform 0.4s ease-out; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45));">
+            <svg viewBox="0 0 100 100" width="52" height="52">
+              <ellipse cx="50" cy="55" rx="20" ry="40" fill="rgba(0,0,0,0.35)" />
+              <rect x="28" y="10" width="44" height="80" rx="16" fill="#F59E0B" stroke="#B45309" stroke-width="2.5"/>
+              <rect x="38" y="32" width="24" height="36" rx="6" fill="#D97706" opacity="0.6"/>
+              <path d="M 32 22 Q 50 16 68 22 L 66 34 L 34 34 Z" fill="#0f172a" stroke="#475569" stroke-width="1"/>
+              <rect x="34" y="70" width="32" height="12" rx="3" fill="#0f172a" />
+              <rect x="25" y="38" width="4" height="18" rx="2" fill="#1e293b" />
+              <rect x="71" y="38" width="4" height="18" rx="2" fill="#1e293b" />
+              <rect x="25" y="60" width="4" height="16" rx="2" fill="#1e293b" />
+              <rect x="71" y="60" width="4" height="16" rx="2" fill="#1e293b" />
+              <circle cx="33" cy="13" r="3" fill="#E0F2FE" stroke="#0284C7" stroke-width="1"/>
+              <circle cx="67" cy="13" r="3" fill="#E0F2FE" stroke="#0284C7" stroke-width="1"/>
+              <rect x="28" y="48" width="44" height="8" fill="#dc2626" />
             </svg>
           </div>
         `,
-        className: '', iconSize: [48, 48], iconAnchor: [24, 24]
+        className: '', iconSize: [52, 52], iconAnchor: [26, 26]
       });
     }
 
@@ -1204,7 +1216,19 @@
       document.getElementById('cfgBusNumber').innerText = "Bus: " + (r.busNumber || "--");
       document.getElementById('cfgCallBtn').href = "tel:" + (r.driverPhone || "");
 
-      activeStops = r.stops || [];
+      const rawStops = r.stops || [];
+      
+      // Bi-directional Stops Sequencing logic:
+      // SHIFT_2 is Evening Return (Company J to Start A ➔ Reverse order)
+      // GENERAL or SHIFT_1 is Morning Inbound (Start A to Company J ➔ Forward order)
+      if (activeShift === "SHIFT_2") {
+        activeStops = [...rawStops].reverse();
+        document.getElementById('drawerTimelineTitle').innerText = "Stops Sequence (Hitachi ➔ Return)";
+      } else {
+        activeStops = [...rawStops];
+        document.getElementById('drawerTimelineTitle').innerText = "Stops Sequence (Start ➔ Hitachi)";
+      }
+
       currentStopIdx = 0;
       alertStopIdx = null;
       hasAlertFired = false;
@@ -1279,6 +1303,7 @@
         const bus = snap.val();
         const badge = document.getElementById('liveStatusBadge');
         const speedTxt = document.getElementById('dispSpeedSub');
+        const cardSpeed = document.getElementById('cardSpeedTxt');
         const now = Date.now();
 
         const isFresh = bus && bus.updatedAt && (now - bus.updatedAt < 20000);
@@ -1287,6 +1312,7 @@
           badge.className = "live-indicator live-off";
           badge.innerText = "OFFLINE";
           speedTxt.innerText = "Bus halted / Driver offline";
+          cardSpeed.innerText = "0 km/h";
           if (busMarker) busMarker.setOpacity(0.35);
           return;
         }
@@ -1297,6 +1323,7 @@
         busLng = bus.longitude;
         busSpeed = bus.speed || 0;
         speedTxt.innerText = `Speed: ${busSpeed} km/h`;
+        cardSpeed.innerText = `${busSpeed} km/h`;
 
         if (prevBusLat !== null && prevBusLng !== null) {
           const movedMeters = getDistanceMeters(prevBusLat, prevBusLng, busLat, busLng);
@@ -1324,14 +1351,26 @@
       });
     }
 
+    // Smart Closest-Stop & Next Stop Progression Logic
     function updateNextStopAndAlarm(lat, lng) {
       if (activeStops.length === 0) return;
 
-      const initialTarget = activeStops[currentStopIdx];
-      const initialDist = getDistanceMeters(lat, lng, initialTarget.lat, initialTarget.lng);
+      let nearestIdx = currentStopIdx;
+      let minDistance = Infinity;
 
-      if (initialDist < 120 && currentStopIdx < activeStops.length - 1) {
-        currentStopIdx++;
+      for (let i = currentStopIdx; i < activeStops.length; i++) {
+        const dist = getDistanceMeters(lat, lng, activeStops[i].lat, activeStops[i].lng);
+        if (dist < minDistance) {
+          minDistance = dist;
+          nearestIdx = i;
+        }
+      }
+
+      if (minDistance < 150 && currentStopIdx < activeStops.length - 1) {
+        currentStopIdx = Math.max(currentStopIdx, nearestIdx);
+        if (getDistanceMeters(lat, lng, activeStops[currentStopIdx].lat, activeStops[currentStopIdx].lng) < 100 && currentStopIdx < activeStops.length - 1) {
+          currentStopIdx++;
+        }
       }
 
       const activeTarget = activeStops[currentStopIdx];
@@ -1344,6 +1383,7 @@
       document.getElementById('dispEtaMins').innerText = `~${mins} min`;
       document.getElementById('dispEtaKm').innerText = `${km} km away`;
 
+      // Dual-Shift 1-Minute Alarm System
       if (alertStopIdx !== null && !hasAlertFired && activeStops[alertStopIdx]) {
         const myStop = activeStops[alertStopIdx];
         const myDist = getDistanceMeters(lat, lng, myStop.lat, myStop.lng);
@@ -1362,7 +1402,7 @@
       hasAlertFired = false;
       if (alertStopIdx !== null && activeStops[alertStopIdx]) {
         const stopName = activeStops[alertStopIdx].name;
-        showPopAlert("🔔", "Boarding Stop Alert Set", `You will receive a 1-minute arrival pop-up alert when the bus approaches <b>${stopName}</b>.`);
+        showPopAlert("🔔", "Boarding Stop Alert Set", `You will receive a 1-minute arrival pop-up alert when the bus approaches <b>${stopName}</b> (${activeShift}).`);
         if ("Notification" in window && Notification.permission !== "granted") {
           Notification.requestPermission();
         }
@@ -1410,7 +1450,7 @@
 
     function enablePassengerLocation() {
       if (!navigator.geolocation) {
-        document.getElementById('myDistTxt').innerText = "GPS Not Supported";
+        document.getElementById('myDistTxt').innerText = "Unsupported";
         return;
       }
 
@@ -1420,7 +1460,7 @@
         return;
       }
 
-      document.getElementById('myDistTxt').innerText = "Locating GPS...";
+      document.getElementById('myDistTxt').innerText = "Locating...";
       passengerWatchId = navigator.geolocation.watchPosition((pos) => {
         userLat = pos.coords.latitude;
         userLng = pos.coords.longitude;
@@ -1438,7 +1478,7 @@
         calcPassengerRoadDistance();
       }, (err) => {
         passengerWatchId = null;
-        document.getElementById('myDistTxt').innerText = "Location Denied / Retry";
+        document.getElementById('myDistTxt').innerText = "Denied";
       }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
     }
 
@@ -1446,10 +1486,12 @@
       if (userLat === null || userLng === null || busLat === null || busLng === null) return;
       const meters = getDistanceMeters(userLat, userLng, busLat, busLng);
       if (meters < 1000) {
-        document.getElementById('myDistTxt').innerText = `${Math.round(meters)} m away from bus`;
+        document.getElementById('myDistTxt').innerText = `${Math.round(meters)}m`;
+        document.getElementById('myDistSub').innerText = "Away";
       } else {
         const d = (meters / 1000).toFixed(1);
-        document.getElementById('myDistTxt').innerText = `${d} km away from bus`;
+        document.getElementById('myDistTxt').innerText = `${d}km`;
+        document.getElementById('myDistSub').innerText = "Away";
       }
     }
   </script>
