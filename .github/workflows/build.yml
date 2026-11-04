@@ -38,9 +38,18 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Decode Keystore
+      - name: Decode Keystore Safely
+        env:
+          RAW_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | tr -d '\r\n ' | base64 -d > $GITHUB_WORKSPACE/android/app/release-key.jks
+          python3 -c "
+          import os, base64
+          raw = os.environ['RAW_BASE64'].strip()
+          clean_b64 = ''.join([line for line in raw.splitlines() if not line.startswith('---')]).replace(' ', '').replace('\n', '').replace('\r', '')
+          with open('android/app/release-key.jks', 'wb') as f:
+              f.write(base64.b64decode(clean_b64))
+          "
+          ls -la android/app/release-key.jks
 
       - name: Build and Sign Release APK
         working-directory: android
