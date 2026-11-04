@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,9 +21,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
 
       - name: Install Dependencies
         run: npm install
@@ -52,7 +52,7 @@ jobs:
         run: |
           APK_FILE=$(find android/app/build/outputs/apk/ -name "*.apk" | head -n 1)
           echo "Signing APK: $APK_FILE"
-          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
+          $ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner sign \
             --ks release-key.jks \
             --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
             --ks-key-alias ${{ secrets.KEY_ALIAS }} \
