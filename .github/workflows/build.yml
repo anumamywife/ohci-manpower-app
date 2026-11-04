@@ -38,35 +38,52 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Decode Keystore Safely
+      - name: Build Unsigned APK with Gradle
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Restore Keystore Safely
         env:
-          RAW_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_DATA: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           python3 -c "
           import os, base64
-          raw = os.environ['RAW_BASE64'].strip()
-          clean_b64 = ''.join([line for line in raw.splitlines() if not line.startswith('---')]).replace(' ', '').replace('\n', '').replace('\r', '')
-          with open('android/app/release-key.jks', 'wb') as f:
+          raw = os.environ['KEY_DATA'].strip()
+          clean_b64 = ''.join([l for l in raw.splitlines() if not l.startswith('---')]).replace(' ', '').replace('\n', '').replace('\r', '')
+          with open('release-key.jks', 'wb') as f:
               f.write(base64.b64decode(clean_b64))
           "
-          ls -la android/app/release-key.jks
+          ls -lh release-key.jks
 
-      - name: Build and Sign Release APK
-        working-directory: android
+      - name: Sign APK with apksigner
         env:
           KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
           KS_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          chmod +x gradlew
-          ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/android/app/release-key.jks" \
-            "-Pandroid.injected.signing.store.password=${KS_PASS}" \
-            "-Pandroid.injected.signing.key.alias=${KS_ALIAS}" \
-            "-Pandroid.injected.signing.key.password=${KS_PASS}"
-
-      - name: Prepare APK for Artifact
-        run: |
-          cp $(find android/app/build/outputs/apk/release/ -name "*.apk" | head -n 1) app-release.apk
+          UNSIGNED_APK=$(find android/app/build/outputs/apk/release/ -name "*unsigned.apk" -o -name "*release*.apk" | head -n 1)
+          echo "Found APK: $UNSIGNED_APK"
+          
+          # Android SDK apksigner tool path
+          APKSIGNER="$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner"
+          if [ ! -f "$APKSIGNER" ]; then
+            APKSIGNER=$(find $ANDROID_SDK_ROOT/build-tools/ -name apksigner | sort -V | tail -n 1)
+          fi
+          
+          echo "Using apksigner at: $APKSIGNER"
+          
+          # Sign command with clean arguments
+          "$APKSIGNER" sign \
+            --ks release-key.jks \
+            --ks-pass "pass:$KS_PASS" \
+            --ks-key-alias "$KS_ALIAS" \
+            --key-pass "pass:$KS_PASS" \
+            --out app-release.apk \
+            "$UNSIGNED_APK"
+          
+          # Verify signature
+          "$APKSIGNER" verify --verbose app-release.apk
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
