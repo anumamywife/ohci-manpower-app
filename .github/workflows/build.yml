@@ -40,7 +40,7 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | grep -v -- '-----' | tr -d '\r\n ' | base64 -d > android/app/release-key.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | grep -v -- '-----' | tr -d '\r\n ' | base64 -d > $GITHUB_WORKSPACE/android/app/release-key.jks
 
       - name: Build and Sign Release APK
         working-directory: android
@@ -50,7 +50,7 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file=release-key.jks \
+            -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/android/app/release-key.jks" \
             -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
             -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
             -Pandroid.injected.signing.key.password="$KEYSTORE_PASSWORD"
