@@ -62,27 +62,19 @@ jobs:
           KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
           KS_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          UNSIGNED_APK=$(find android/app/build/outputs/apk/release/ -name "*unsigned.apk" -o -name "*release*.apk" | head -n 1)
+          UNSIGNED_APK=$(find android/app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
           echo "Found APK: $UNSIGNED_APK"
           
-          # Android SDK apksigner tool path
-          APKSIGNER="$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner"
-          if [ ! -f "$APKSIGNER" ]; then
-            APKSIGNER=$(find $ANDROID_SDK_ROOT/build-tools/ -name apksigner | sort -V | tail -n 1)
-          fi
-          
+          APKSIGNER=$(find $ANDROID_SDK_ROOT/build-tools/ -name apksigner | sort -V | tail -n 1)
           echo "Using apksigner at: $APKSIGNER"
           
-          # Sign command with clean arguments
-          "$APKSIGNER" sign \
+          # Using stdin passing via env to avoid special character breakage
+          printf "%s\n%s\n" "$KS_PASS" "$KS_PASS" | "$APKSIGNER" sign \
             --ks release-key.jks \
-            --ks-pass "pass:$KS_PASS" \
             --ks-key-alias "$KS_ALIAS" \
-            --key-pass "pass:$KS_PASS" \
             --out app-release.apk \
             "$UNSIGNED_APK"
           
-          # Verify signature
           "$APKSIGNER" verify --verbose app-release.apk
 
       - name: Upload Artifact
