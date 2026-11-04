@@ -937,6 +937,40 @@
     let userLat = null, userLng = null;
     let passengerWatchId = null;
 
+    // --- AUTO UPDATE VERSION CHECK LOGIC ---
+    const CURRENT_APP_VERSION = "1.0"; 
+
+    function checkForAppUpdates() {
+      db.ref('app_config').once('value', (snapshot) => {
+        const config = snapshot.val();
+        if (!config) return;
+
+        const serverVersion = config.latest_version;
+        const downloadUrl = config.apk_download_url;
+        const message = config.update_message || "Naya update available hai!";
+
+        if (serverVersion && serverVersion !== CURRENT_APP_VERSION) {
+          showUpdatePopup(message, downloadUrl);
+        }
+      });
+    }
+
+    function showUpdatePopup(message, url) {
+      const updateHtml = `
+        <div style="font-family: 'Inter', sans-serif;">
+          <p style="margin-bottom: 12px; color: #cbd5e1; font-size: 12.5px;">${message}</p>
+          <a href="${url}" target="_blank" class="btn-primary" style="display: block; text-align: center; text-decoration: none; line-height: 44px; margin-top: 10px;">Download Update Now</a>
+        </div>
+      `;
+      showPopAlert("🚀", "App Update Available", updateHtml);
+    }
+
+    // Trigger update check on startup
+    setTimeout(() => {
+      checkForAppUpdates();
+    }, 2000);
+    // ----------------------------------------
+
     // Ultra-Modern Realistic Corporate Bus SVG Icon
     function createBusIcon(bearing = 0) {
       return L.divIcon({
@@ -1218,9 +1252,6 @@
 
       const rawStops = r.stops || [];
       
-      // Bi-directional Stops Sequencing logic:
-      // SHIFT_2 is Evening Return (Company J to Start A ➔ Reverse order)
-      // GENERAL or SHIFT_1 is Morning Inbound (Start A to Company J ➔ Forward order)
       if (activeShift === "SHIFT_2") {
         activeStops = [...rawStops].reverse();
         document.getElementById('drawerTimelineTitle').innerText = "Stops Sequence (Hitachi ➔ Return)";
@@ -1351,7 +1382,6 @@
       });
     }
 
-    // Smart Closest-Stop & Next Stop Progression Logic
     function updateNextStopAndAlarm(lat, lng) {
       if (activeStops.length === 0) return;
 
@@ -1383,7 +1413,6 @@
       document.getElementById('dispEtaMins').innerText = `~${mins} min`;
       document.getElementById('dispEtaKm').innerText = `${km} km away`;
 
-      // Dual-Shift 1-Minute Alarm System
       if (alertStopIdx !== null && !hasAlertFired && activeStops[alertStopIdx]) {
         const myStop = activeStops[alertStopIdx];
         const myDist = getDistanceMeters(lat, lng, myStop.lat, myStop.lng);
