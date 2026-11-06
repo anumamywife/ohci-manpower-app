@@ -1122,7 +1122,7 @@
     <div class="drawer-top">
       <button class="drawer-close" onclick="toggleDrawer(false)" aria-label="Close menu">✕</button>
       <div style="font-size: 9px; font-weight: 800; letter-spacing: 1.4px; opacity: 0.92; margin-bottom: 4px; text-transform: uppercase;">OHCI • MANPOWER TRANSPORT</div>
-      <h3 style="margin: 0 0 4px 0; font-family: 'Manrope', sans-serif; font-size: 19px; font-weight: 800; letter-spacing: -0.3px;">Hitachi Transport</h3>
+      <h3 style="margin: 0 0 4px 0; font-family: 'Manrope', sans-serif; font-size: 19px; font-weight: 800; letter-spacing: -0.3px;">OHCI Transport</h3>
       <div style="display: flex; align-items: center; gap: 6px;">
         <span style="font-size: 11px;">📍</span>
         <span id="drawerRouteName" style="font-size: 11px; opacity: 0.95; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Route Overview</span>
@@ -1180,7 +1180,7 @@
     <div class="stop-select-wrapper">
       <span style="font-size: 15px;">📍</span>
       <select id="boardingStopSelect" onchange="onBoardingStopSelected()">
-        <option value="">Select Boarding Stop for 1-Min Alarm Alert...</option>
+        <option value="">Select Boarding Stop for 5-Min Alarm Alert...</option>
       </select>
     </div>
 
@@ -1232,12 +1232,11 @@
       minZoom: 10,
       zoomAnimation: true,
       fadeAnimation: true,
-      markerZoomAnimation: true
+      markerZoomAnimation: true,
       // --- ROTATION ENABLE SETTINGS ---
-      touchRotate: true,       // Mobile par 2 fingers se twist karke rotate karne ke liye
+      touchRotate: true,
       rotate: true,
-      bearing: 0               // Default north alignment
-      
+      bearing: 0
     }).setView([13.2896471, 77.5701378], 13);
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -1255,6 +1254,8 @@
     let activeRouteId = null;
     let activeShift = "GENERAL";
     let activeStops = [];
+    let busToStopPolyline = null; // Google Maps style dynamic line between live bus and selected stop
+    let busToStopGlowLine = null; // <-- Isey yahan add karein
     let currentStopIdx = 0;
     let alertStopIdx = null;
     let hasAlertFired = false;
@@ -1269,7 +1270,7 @@
     let lastAppliedDirectionIsEvening = null;
 
     // --- AUTO UPDATE VERSION CHECK LOGIC ---
-    const CURRENT_APP_VERSION = "1.0.27"; 
+    const CURRENT_APP_VERSION = "1.0.28"; 
 
     function checkForAppUpdates() {
       db.ref('app_config').once('value', (snapshot) => {
@@ -1312,9 +1313,8 @@
       return activeShift === "SHIFT_2";
     }
 
-    // --- HIGH-LEVEL 3D ISOMETRIC RETRO-MODERN BUS ICON (MATCHING REFERENCE IMAGE) ---
+    // --- HIGH-LEVEL 3D ISOMETRIC RETRO-MODERN BUS ICON ---
     function createBusIcon(bearing = 0) {
-      // Flip horizontally when heading West (180-359 deg) so 3D isometric bus never appears upside-down
       const normalized = ((bearing % 360) + 360) % 360;
       const flipX = (normalized > 180 && normalized < 360) ? -1 : 1;
 
@@ -1323,53 +1323,30 @@
           <div class="iso-bus-wrapper" style="width: 66px; height: 66px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 8px 14px rgba(59,27,79,0.55));">
             <div style="transform: scaleX(${flipX}); transition: transform 0.35s ease-out; width: 64px; height: 64px;">
               <svg viewBox="0 0 120 110" width="64" height="64" xmlns="http://www.w3.org/2000/svg">
-                <!-- Ground Isometric Drop Shadow -->
                 <path d="M 16 62 L 66 96 C 74 101 88 99 98 92 L 112 80 C 116 76 114 70 106 65 L 54 32 C 44 26 28 30 18 40 C 10 48 10 57 16 62 Z" fill="rgba(35, 14, 48, 0.42)" />
-
-                <!-- Lower Body Base (Two-Tone Sage & Coral-Blush Trim) -->
                 <path d="M 18 52 L 68 85 C 75 89 86 88 95 81 L 106 71 C 110 67 110 61 108 55 L 55 21 L 20 36 C 16 41 16 48 18 52 Z" fill="#b8c9bc" stroke="#3b1b4f" stroke-width="1.6" stroke-linejoin="round"/>
-
-                <!-- Accent Stripe (#ff6b6b to #d6598f) -->
                 <path d="M 18 46 L 68 79 C 75 83 86 82 95 75 L 107 64 L 108 59 L 95 70 C 86 77 75 78 68 74 L 18 41 Z" fill="#ff6b6b"/>
-
-                <!-- Upper Cabin Cream Body (#fdf8f5) -->
                 <path d="M 18 44 L 22 23 C 24 16 32 10 42 7 L 55 4 C 62 3 68 4 74 8 L 106 31 C 111 35 112 42 110 52 L 107 64 L 95 74 C 86 81 75 82 68 78 L 18 44 Z" fill="#fcf5f2" stroke="#3b1b4f" stroke-width="1.6" stroke-linejoin="round"/>
-
-                <!-- Isometric Ribbed Roof -->
                 <path d="M 28 19 L 48 7 C 54 4 62 4 68 8 L 102 31 C 106 34 106 39 101 43 L 81 56 C 75 60 67 59 61 55 L 27 31 C 23 28 23 22 28 19 Z" fill="#fffaf8" stroke="#e2d2ce" stroke-width="1.2"/>
-                <!-- Roof Ribs -->
                 <line x1="36" y1="19" x2="72" y2="44" stroke="#d5c2be" stroke-width="1.5" stroke-linecap="round"/>
                 <line x1="42" y1="15" x2="78" y2="40" stroke="#d5c2be" stroke-width="1.5" stroke-linecap="round"/>
                 <line x1="48" y1="12" x2="84" y2="37" stroke="#d5c2be" stroke-width="1.5" stroke-linecap="round"/>
                 <line x1="54" y1="9" x2="90" y2="34" stroke="#d5c2be" stroke-width="1.5" stroke-linecap="round"/>
-
-                <!-- Side Panoramic Windows (Plum/Dark Glass #3b1b4f) -->
                 <path d="M 24 27 L 34 34 L 33 45 L 22 38 Z" fill="#3b1b4f" stroke="#7a2e6f" stroke-width="1"/>
                 <path d="M 37 36 L 48 43 L 47 54 L 36 47 Z" fill="#3b1b4f" stroke="#7a2e6f" stroke-width="1"/>
                 <path d="M 51 45 L 62 52 L 61 63 L 50 56 Z" fill="#3b1b4f" stroke="#7a2e6f" stroke-width="1"/>
                 <path d="M 65 54 L 74 60 L 73 71 L 64 65 Z" fill="#3b1b4f" stroke="#7a2e6f" stroke-width="1"/>
-
-                <!-- Split Front Windshield (With Gloss Reflection) -->
                 <path d="M 79 58 L 92 49 L 94 61 L 78 71 Z" fill="#3b1b4f" stroke="#7a2e6f" stroke-width="1.2" stroke-linejoin="round"/>
                 <path d="M 94 48 L 106 39 L 107 51 L 96 60 Z" fill="#4c2363" stroke="#7a2e6f" stroke-width="1.2" stroke-linejoin="round"/>
-                <!-- Windshield Glare -->
                 <path d="M 82 58 L 89 53 L 86 64 L 81 67 Z" fill="rgba(244, 215, 212, 0.28)"/>
                 <path d="M 97 48 L 103 43 L 101 53 L 97 56 Z" fill="rgba(244, 215, 212, 0.25)"/>
-
-                <!-- Rear Wheel -->
                 <ellipse cx="31" cy="59" rx="6.5" ry="8.5" transform="rotate(-22 31 59)" fill="#261133" stroke="#15081f" stroke-width="1.5"/>
                 <ellipse cx="31" cy="59" rx="3.2" ry="4.5" transform="rotate(-22 31 59)" fill="#f4d7d4"/>
-
-                <!-- Front Wheel -->
                 <ellipse cx="60" cy="78" rx="6.8" ry="8.8" transform="rotate(-22 60 78)" fill="#261133" stroke="#15081f" stroke-width="1.5"/>
                 <ellipse cx="60" cy="78" rx="3.4" ry="4.6" transform="rotate(-22 60 78)" fill="#f4d7d4"/>
-
-                <!-- Headlights & Front Chrome Bumper -->
                 <circle cx="84" cy="79" r="3" fill="#fffbeb" stroke="#d6598f" stroke-width="1"/>
                 <circle cx="104" cy="65" r="2.6" fill="#fffbeb" stroke="#d6598f" stroke-width="1"/>
-                <!-- Turn Indicator -->
                 <path d="M 75 82 L 81 84 L 81 86 L 75 84 Z" fill="#ff6b6b"/>
-                <!-- Front Chrome Bumper -->
                 <path d="M 78 88 L 109 67 C 111 66 112 68 110 70 L 80 91 C 77 92 76 89 78 88 Z" fill="#e2e8f0" stroke="#475569" stroke-width="1"/>
               </svg>
             </div>
@@ -1664,7 +1641,6 @@
       const isEvening = isEveningReturnTime();
       lastAppliedDirectionIsEvening = isEvening;
 
-      // Ensure base array is always Morning order (Start -> Hitachi at the end)
       let morningOrdered = [...rawStops];
       if (morningOrdered.length > 1) {
         const firstIsHitachi = /hitachi/i.test(morningOrdered[0].name || '');
@@ -1675,11 +1651,9 @@
       }
 
       if (isEvening) {
-        // Evening (12 PM to 9 PM): Company (Hitachi) -> Railway Station -> Other Stops
         activeStops = [...morningOrdered].reverse();
         document.getElementById('drawerTimelineTitle').querySelector('span').innerText = "Stops Sequence (Hitachi ➔ Return)";
       } else {
-        // Morning (7 AM to 10 AM): Start Stops -> D-Cross -> Railway Station -> Hitachi
         activeStops = [...morningOrdered];
         document.getElementById('drawerTimelineTitle').querySelector('span').innerText = "Stops Sequence (Start ➔ Hitachi)";
       }
@@ -1689,10 +1663,12 @@
       stopMarkers.forEach(m => map.removeLayer(m));
       stopMarkers = [];
 
+      // Static polyline removed completely as requested.
+
       const dropSelect = document.getElementById('boardingStopSelect');
       const drawerList = document.getElementById('drawerStopsList');
       const prevSelectedVal = dropSelect.value;
-      dropSelect.innerHTML = '<option value="">Select Boarding Stop for 1-Min Alarm Alert...</option>';
+      dropSelect.innerHTML = '<option value="">Select Boarding Stop for 5-Min Alarm Alert...</option>';
       drawerList.innerHTML = '';
 
       activeStops.forEach((st, idx) => {
@@ -1777,6 +1753,66 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
+    // --- DYNAMIC GOOGLE-MAPS STYLE LINE BETWEEN LIVE BUS AND SELECTED STOP ---
+async function updateBusToSelectedStopPolyline() {
+      // Purani lines ko map se hataein
+      if (busToStopPolyline) {
+        map.removeLayer(busToStopPolyline);
+        busToStopPolyline = null;
+      }
+      if (busToStopGlowLine) {
+        map.removeLayer(busToStopGlowLine);
+        busToStopGlowLine = null;
+      }
+
+      if (busLat === null || busLng === null) return;
+      if (alertStopIdx === null || !activeStops[alertStopIdx]) return;
+
+      const selectedStop = activeStops[alertStopIdx];
+
+      try {
+        // OSRM Free Routing API (Bus location se Selected Stop tak ka exact road rasta mangwayeinge)
+        const url = `https://router.project-osrm.org/route/v1/driving/${busLng},${busLat};${selectedStop.lng},${selectedStop.lat}?overview=full&geometries=geojson`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.routes && data.routes.length > 0) {
+          // API se mili hui road coordinates ki list (lat/lngs)
+          const coords = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+
+          // Outer glow shadow road line
+          busToStopGlowLine = L.polyline(coords, {
+            color: '#ff6b6b',
+            weight: 6,
+            opacity: 0.45,
+            smoothFactor: 1
+          }).addTo(map);
+
+          // Main vibrant road line matching app color theme
+          busToStopPolyline = L.polyline(coords, {
+            color: '#d6598f',
+            weight: 4,
+            opacity: 0.92,
+            dashArray: '8, 8',
+            smoothFactor: 1
+          }).addTo(map);
+        } else {
+          // Fallback agar API se rasta na mile toh seedhi line ban jaye
+          drawFallbackStraightLine(selectedStop);
+        }
+      } catch (e) {
+        console.log("Routing API error, using direct line fallback:", e);
+        drawFallbackStraightLine(selectedStop);
+      }
+    }
+
+    function drawFallbackStraightLine(selectedStop) {
+      const latLngs = [[busLat, busLng], [selectedStop.lat, selectedStop.lng]];
+      busToStopGlowLine = L.polyline(latLngs, { color: '#ff6b6b', weight: 6, opacity: 0.45 }).addTo(map);
+      busToStopPolyline = L.polyline(latLngs, { color: '#d6598f', weight: 4, opacity: 0.92, dashArray: '8, 8' }).addTo(map);
+    }
+
     let busWatcherRef = null;
     function listenToBusGpsStream() {
       if (busWatcherRef) busWatcherRef.off();
@@ -1801,6 +1837,10 @@
           speedTxt.innerText = "Bus halted / Driver offline";
           cardSpeed.innerText = "0 km/h";
           if (busMarker) busMarker.setOpacity(0.35);
+          if (busToStopPolyline) {
+            map.removeLayer(busToStopPolyline);
+            busToStopPolyline = null;
+          }
           return;
         }
 
@@ -1835,6 +1875,7 @@
 
         updateNextStopAndAlarm(busLat, busLng);
         calcPassengerRoadDistance();
+        updateBusToSelectedStopPolyline();
       });
     }
 
@@ -1918,9 +1959,10 @@
         const myDist = getDistanceMeters(lat, lng, myStop.lat, myStop.lng);
         const myMins = ((myDist / 1000) / effectiveSpeed) * 60;
 
-        if (myDist <= 350 || myMins <= 1.0) {
+        // 5 Minutes Warning (~2 km away)
+        if (myDist <= 2000 || myMins <= 5.0) {
           hasAlertFired = true;
-          triggerOneMinuteArrivalAlarm(myStop.name);
+          triggerFiveMinuteArrivalAlarm(myStop.name);
         }
       }
     }
@@ -1931,21 +1973,42 @@
       hasAlertFired = false;
       if (alertStopIdx !== null && activeStops[alertStopIdx]) {
         const stopName = activeStops[alertStopIdx].name;
-        showPopAlert("🔔", "Boarding Stop Alert Set", `You will receive a 1-minute arrival pop-up alert when the bus approaches <b>${stopName}</b> (${activeShift}).`);
+        showPopAlert("🔔", "Boarding Stop Alert Set", `You will receive a 5-minute arrival alert when the bus approaches <b>${stopName}</b>.`);
         if ("Notification" in window && Notification.permission !== "granted") {
           Notification.requestPermission();
         }
       }
+      // Update dynamic polyline instantly when user selects a stop
+      updateBusToSelectedStopPolyline();
     }
 
-    function triggerOneMinuteArrivalAlarm(stopName) {
+    async function triggerFiveMinuteArrivalAlarm(stopName) {
       playChimeAudio();
       if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
 
-      showPopAlert("🚌", "Bus Arriving in ~1 Minute!", `Attention! Your Hitachi bus is reaching <b>${stopName}</b>. Please be at your boarding point ready to board.`);
+      showPopAlert("🚌", "Bus Arriving in ~5 Minutes!", `Attention! Your Hitachi bus is reaching <b>${stopName}</b> in about 5 minutes. Please be ready at your boarding point.`);
+
+      try {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications) {
+          await window.Capacitor.Plugins.LocalNotifications.schedule({
+            notifications: [
+              {
+                title: "🚌 Bus Arriving in ~5 Minutes!",
+                body: `Your bus is approaching ${stopName}. Please be ready!`,
+                id: new Date().getTime(),
+                schedule: { at: new Date(Date.now() + 1000) },
+                sound: null,
+                badge: 1
+              }
+            ]
+          });
+        }
+      } catch (e) {
+        console.log("Local notifications browser mode fallback");
+      }
 
       if ("speechSynthesis" in window) {
-        const utter = new SpeechSynthesisUtterance(`Attention please. Your Hitachi Bus is arriving at ${stopName} in one minute.`);
+        const utter = new SpeechSynthesisUtterance(`Attention please. Your Hitachi Bus is arriving at ${stopName} in approximately five minutes.`);
         window.speechSynthesis.speak(utter);
       }
     }
