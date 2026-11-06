@@ -966,7 +966,7 @@
       box-shadow: 0 6px 18px rgba(255, 107, 107, 0.35);
     }
 
-    /* Map Stop Tooltip Badges */
+    /* Map Stop Custom Marker Badges */
     .stop-badge {
       background: linear-gradient(135deg, rgba(122, 46, 111, 0.92), rgba(59, 27, 79, 0.95));
       border: 1.5px solid var(--c-blush);
@@ -1254,8 +1254,7 @@
     let activeRouteId = null;
     let activeShift = "GENERAL";
     let activeStops = [];
-    let busToStopPolyline = null; // Google Maps style dynamic line between live bus and selected stop
-    let busToStopGlowLine = null; // <-- Isey yahan add karein
+    let activeRouteLines = []; // Array to track active dynamic route lines and avoid stacking
     let currentStopIdx = 0;
     let alertStopIdx = null;
     let hasAlertFired = false;
@@ -1270,7 +1269,7 @@
     let lastAppliedDirectionIsEvening = null;
 
     // --- AUTO UPDATE VERSION CHECK LOGIC ---
-    const CURRENT_APP_VERSION = "1.0.28"; 
+    const CURRENT_APP_VERSION = "1.0.30"; 
 
     function checkForAppUpdates() {
       db.ref('app_config').once('value', (snapshot) => {
@@ -1663,8 +1662,6 @@
       stopMarkers.forEach(m => map.removeLayer(m));
       stopMarkers = [];
 
-      // Static polyline removed completely as requested.
-
       const dropSelect = document.getElementById('boardingStopSelect');
       const drawerList = document.getElementById('drawerStopsList');
       const prevSelectedVal = dropSelect.value;
@@ -1687,19 +1684,22 @@
         `;
         drawerList.appendChild(li);
 
-        const m = L.circleMarker([st.lat, st.lng], {
-          radius: isDest ? 8 : 6,
-          color: isDest ? '#ff6b6b' : '#d6598f',
-          fillColor: '#3b1b4f',
-          fillOpacity: 1,
-          weight: 3
-        }).bindTooltip(`<b>${st.name}</b>`, {
-          permanent: true,
-          direction: 'top',
-          offset: [0, -8],
-          className: 'stop-badge' + (isDest ? ' dest' : '')
-        }).addTo(map);
+        // --- FIXED: Custom L.divIcon used instead of bindTooltip to lock labels properly during mobile rotation ---
+        const stopHtml = `
+          <div style="display: flex; flex-direction: column; align-items: center; pointer-events: none; transform: translate(-50%, -100%);">
+            <div class="stop-badge ${isDest ? 'dest' : ''}">${st.name}</div>
+            <div style="width: ${isDest ? '16px' : '12px'}; height: ${isDest ? '16px' : '12px'}; border-radius: 50%; background: #3b1b4f; border: 3px solid ${isDest ? '#ff6b6b' : '#d6598f'}; box-shadow: 0 0 8px rgba(0,0,0,0.4); margin-top: 2px;"></div>
+          </div>
+        `;
 
+        const customIcon = L.divIcon({
+          html: stopHtml,
+          className: '',
+          iconSize: [0, 0],
+          iconAnchor: [0, 0]
+        });
+
+        const m = L.marker([st.lat, st.lng], { icon: customIcon }).addTo(map);
         stopMarkers.push(m);
       });
 
@@ -1753,17 +1753,13 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    // --- DYNAMIC GOOGLE-MAPS STYLE LINE BETWEEN LIVE BUS AND SELECTED STOP ---
-async function updateBusToSelectedStopPolyline() {
-      // Purani lines ko map se hataein
-      if (busToStopPolyline) {
-        map.removeLayer(busToStopPolyline);
-        busToStopPolyline = null;
-      }
-      if (busToStopGlowLine) {
-        map.removeLayer(busToStopGlowLine);
-        busToStopGlowLine = null;
-      }
+    // --- FIXED: OSRM ROAD-SNAPPED ROUTING WITH STRICT MULTIPLE LINE PURGING ---
+    async function updateBusToSelectedStopPolyline() {
+      // Clear out all prior active route lines from the map layer
+      activeRouteLines.forEach(line => {
+        if (line) map.removeLayer(line);
+      });
+      activeRouteLines = [];
 
       if (busLat === null || busLng === null) return;
       if (alertStopIdx === null || !activeStops[alertStopIdx]) return;
@@ -1771,46 +1767,46 @@ async function updateBusToSelectedStopPolyline() {
       const selectedStop = activeStops[alertStopIdx];
 
       try {
-        // OSRM Free Routing API (Bus location se Selected Stop tak ka exact road rasta mangwayeinge)
         const url = `https://router.project-osrm.org/route/v1/driving/${busLng},${busLat};${selectedStop.lng},${selectedStop.lat}?overview=full&geometries=geojson`;
         
         const response = await fetch(url);
         const data = await response.json();
 
         if (data.routes && data.routes.length > 0) {
-          // API se mili hui road coordinates ki list (lat/lngs)
           const coords = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
 
           // Outer glow shadow road line
-          busToStopGlowLine = L.polyline(coords, {
+          const glowLine = L.polyline(coords, {
             color: '#ff6b6b',
             weight: 6,
             opacity: 0.45,
             smoothFactor: 1
           }).addTo(map);
 
-          // Main vibrant road line matching app color theme
-          busToStopPolyline = L.polyline(coords, {
+          // Main vibrant road line
+          const mainLine = L.polyline(coords, {
             color: '#d6598f',
             weight: 4,
             opacity: 0.92,
             dashArray: '8, 8',
             smoothFactor: 1
           }).addTo(map);
+
+          activeRouteLines.push(glowLine, mainLine);
         } else {
-          // Fallback agar API se rasta na mile toh seedhi line ban jaye
           drawFallbackStraightLine(selectedStop);
         }
       } catch (e) {
-        console.log("Routing API error, using direct line fallback:", e);
+        console.log("Routing API error:", e);
         drawFallbackStraightLine(selectedStop);
       }
     }
 
     function drawFallbackStraightLine(selectedStop) {
       const latLngs = [[busLat, busLng], [selectedStop.lat, selectedStop.lng]];
-      busToStopGlowLine = L.polyline(latLngs, { color: '#ff6b6b', weight: 6, opacity: 0.45 }).addTo(map);
-      busToStopPolyline = L.polyline(latLngs, { color: '#d6598f', weight: 4, opacity: 0.92, dashArray: '8, 8' }).addTo(map);
+      const glowLine = L.polyline(latLngs, { color: '#ff6b6b', weight: 6, opacity: 0.45 }).addTo(map);
+      const mainLine = L.polyline(latLngs, { color: '#d6598f', weight: 4, opacity: 0.92, dashArray: '8, 8' }).addTo(map);
+      activeRouteLines.push(glowLine, mainLine);
     }
 
     let busWatcherRef = null;
@@ -1837,10 +1833,10 @@ async function updateBusToSelectedStopPolyline() {
           speedTxt.innerText = "Bus halted / Driver offline";
           cardSpeed.innerText = "0 km/h";
           if (busMarker) busMarker.setOpacity(0.35);
-          if (busToStopPolyline) {
-            map.removeLayer(busToStopPolyline);
-            busToStopPolyline = null;
-          }
+          activeRouteLines.forEach(line => {
+            if (line) map.removeLayer(line);
+          });
+          activeRouteLines = [];
           return;
         }
 
