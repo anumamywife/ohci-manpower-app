@@ -18,14 +18,18 @@
 
   <style>
     :root {
-      --ohci-red: #e53935;
-      --ohci-red-dark: #b91c1c;
-      --ohci-accent: #38bdf8;
-      --ohci-bg: #070b14;
-      --ohci-surface: #0f172a;
-      --ohci-border: rgba(255, 255, 255, 0.12);
-      --ohci-text: #f8fafc;
-      --ohci-muted: #94a3b8;
+      --c-coral: #ff6b6b;
+      --c-blush: #f4d7d4;
+      --c-rose: #d6598f;
+      --c-plum: #7a2e6f;
+      --c-deep: #3b1b4f;
+
+      --glass-bg: linear-gradient(145deg, rgba(122, 46, 111, 0.72) 0%, rgba(59, 27, 79, 0.88) 100%);
+      --glass-card: linear-gradient(160deg, rgba(122, 46, 111, 0.78) 0%, rgba(59, 27, 79, 0.92) 100%);
+      --glass-border: rgba(244, 215, 212, 0.28);
+      --glass-highlight: rgba(255, 255, 255, 0.18);
+      --text-bright: #ffffff;
+      --text-soft: #f4d7d4;
     }
 
     * {
@@ -42,8 +46,8 @@
       height: 100dvh;
       overflow: hidden;
       overscroll-behavior: none;
-      background: var(--ohci-bg);
-      color: var(--ohci-text);
+      background: var(--c-deep);
+      color: var(--text-bright);
       user-select: none;
       -webkit-user-select: none;
     }
@@ -59,20 +63,26 @@
       height: 100%;
       width: 100%;
       z-index: 1;
-      background: #0b1220;
+      background: #f4e8e6;
     }
 
-    /* ===== MODALS ===== */
+    .leaflet-tile-container img {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    /* ===== GLASS MODALS ===== */
     .modal-overlay {
       position: fixed;
       inset: 0;
       width: 100%;
       height: 100dvh;
       background:
-        radial-gradient(circle at 50% -10%, rgba(229, 57, 53, 0.25), transparent 60%),
-        rgba(5, 9, 18, 0.92);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+        radial-gradient(circle at 50% 0%, rgba(255, 107, 107, 0.35), transparent 60%),
+        radial-gradient(circle at 85% 90%, rgba(214, 89, 143, 0.3), transparent 55%),
+        rgba(38, 15, 53, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       z-index: 99999;
       display: flex;
       align-items: center;
@@ -84,19 +94,21 @@
     .modal-card {
       position: relative;
       width: 100%;
-      max-width: 370px;
-      background: linear-gradient(165deg, #162033 0%, #0b111e 100%);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-top: 2.5px solid var(--ohci-red);
-      border-radius: 22px;
-      padding: 20px 18px 18px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
-      animation: cardPop 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 375px;
+      background: var(--glass-card);
+      border: 1px solid var(--glass-border);
+      border-top: 2.5px solid var(--c-coral);
+      border-radius: 24px;
+      padding: 22px 18px 18px;
+      box-shadow: 0 24px 60px rgba(25, 8, 36, 0.75), inset 0 1px 1px var(--glass-highlight);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      animation: cardPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       margin: auto;
     }
 
     @keyframes cardPop {
-      from { transform: translateY(10px) scale(0.97); opacity: 0; }
+      from { transform: translateY(14px) scale(0.96); opacity: 0; }
       to { transform: translateY(0) scale(1); opacity: 1; }
     }
 
@@ -115,24 +127,26 @@
       font-weight: 800;
       letter-spacing: 1.2px;
       text-transform: uppercase;
-      color: #ff8580;
-      background: rgba(229, 57, 53, 0.12);
-      border: 1px solid rgba(229, 57, 53, 0.28);
-      padding: 4px 9px;
+      color: var(--c-blush);
+      background: linear-gradient(90deg, rgba(255, 107, 107, 0.25), rgba(214, 89, 143, 0.25));
+      border: 1px solid rgba(255, 107, 107, 0.45);
+      padding: 4.5px 10px;
       border-radius: 999px;
+      box-shadow: 0 2px 10px rgba(255, 107, 107, 0.2);
     }
 
     .card-badge-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 11px;
-      background: rgba(229, 57, 53, 0.16);
-      border: 1px solid rgba(229, 57, 53, 0.32);
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.28), rgba(214, 89, 143, 0.28));
+      border: 1px solid rgba(244, 215, 212, 0.35);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 18px;
       flex-shrink: 0;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
     }
 
     .modal-card h2 {
@@ -145,7 +159,8 @@
     }
 
     .modal-card p {
-      color: var(--ohci-muted);
+      color: var(--c-blush);
+      opacity: 0.88;
       font-size: 11.5px;
       line-height: 1.45;
       margin: 0 0 14px 0;
@@ -171,7 +186,7 @@
     .form-label {
       display: block;
       margin: 0 0 4px 2px;
-      color: #cbd5e1;
+      color: var(--c-blush);
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.6px;
@@ -180,75 +195,85 @@
 
     .input-field, .select-field {
       width: 100%;
-      height: 42px;
+      height: 43px;
       padding: 0 12px;
-      border: 1px solid rgba(148, 163, 184, 0.24);
-      border-radius: 11px;
-      background: rgba(6, 11, 21, 0.85);
-      color: #f8fafc;
+      border: 1px solid rgba(244, 215, 212, 0.28);
+      border-radius: 12px;
+      background: rgba(42, 18, 58, 0.65);
+      color: #ffffff;
       font-size: 13px;
       font-weight: 600;
       outline: none;
-      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+      backdrop-filter: blur(10px);
+      transition: all 0.2s ease;
     }
 
     .input-field:focus, .select-field:focus {
-      border-color: #ff625d;
-      box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.16);
-      background: #081020;
+      border-color: var(--c-coral);
+      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.25);
+      background: rgba(59, 27, 79, 0.85);
     }
 
     .input-field::placeholder {
-      color: #64748b;
+      color: rgba(244, 215, 212, 0.5);
       font-weight: 500;
       font-size: 12px;
     }
 
     .select-field option {
-      background: #0f172a;
+      background: var(--c-deep);
       color: #fff;
     }
 
     .btn-primary {
       width: 100%;
-      height: 44px;
-      margin-top: 4px;
-      border: none;
-      border-radius: 12px;
+      height: 45px;
+      margin-top: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 13px;
       color: #ffffff;
-      background: linear-gradient(110deg, #e53935 0%, #b91c1c 100%);
-      box-shadow: 0 8px 20px rgba(229, 57, 53, 0.3);
+      background: linear-gradient(115deg, var(--c-coral) 0%, var(--c-rose) 55%, var(--c-plum) 100%);
+      box-shadow: 0 10px 24px rgba(255, 107, 107, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.35);
       font-family: "Manrope", sans-serif;
       font-weight: 800;
       font-size: 13px;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
       text-transform: uppercase;
       cursor: pointer;
-      transition: transform 0.15s ease, filter 0.15s ease;
+      transition: transform 0.16s ease, box-shadow 0.2s ease, filter 0.16s ease;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.06);
+      box-shadow: 0 12px 28px rgba(255, 107, 107, 0.5);
     }
 
     .btn-primary:active {
-      transform: scale(0.98);
-      filter: brightness(0.95);
+      transform: scale(0.97);
     }
 
     .auth-footer {
       text-align: center;
-      margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 13px;
+      padding-top: 11px;
+      border-top: 1px solid rgba(244, 215, 212, 0.16);
     }
 
     .link-toggle {
-      color: #ff8580;
+      color: var(--c-blush);
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .link-toggle:hover {
+      color: var(--c-coral);
     }
 
     .err-msg {
-      color: #f87171;
+      color: #ffb4b4;
       font-size: 11.5px;
       margin-top: 8px;
       font-weight: 700;
@@ -257,7 +282,7 @@
       min-height: 16px;
     }
 
-    /* ===== TOP FLOATING BAR ===== */
+    /* ===== TOP FLOATING GLASS BAR ===== */
     .top-bar {
       position: absolute;
       top: max(12px, env(safe-area-inset-top, 12px));
@@ -275,68 +300,69 @@
     .top-bar > * { pointer-events: auto; }
 
     .badge-shift, .header-info-card {
-      background: rgba(11, 18, 32, 0.92);
-      border: 1px solid var(--ohci-border);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      box-shadow: 0 12px 32px rgba(40, 12, 58, 0.45), inset 0 1px 0 var(--glass-highlight);
     }
 
-    /* ENHANCED MODERN MENU BUTTON */
+    /* ANIMATED GLASS MENU BUTTON */
     .btn-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
       color: #ffffff;
-      background: linear-gradient(145deg, rgba(22, 32, 51, 0.96) 0%, rgba(10, 16, 29, 0.92) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: linear-gradient(145deg, rgba(214, 89, 143, 0.85) 0%, rgba(122, 46, 111, 0.9) 50%, rgba(59, 27, 79, 0.95) 100%);
+      border: 1px solid rgba(244, 215, 212, 0.4);
+      box-shadow: 0 10px 26px rgba(59, 27, 79, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       flex-shrink: 0;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .btn-icon:hover {
-      border-color: rgba(229, 57, 53, 0.6);
-      box-shadow: 0 10px 28px rgba(229, 57, 53, 0.22);
+      border-color: var(--c-coral);
+      box-shadow: 0 12px 30px rgba(255, 107, 107, 0.4);
+      transform: translateY(-1px);
     }
 
     .btn-icon:active {
-      transform: scale(0.93);
+      transform: scale(0.92);
     }
 
     .menu-bars {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 4.5px;
       align-items: flex-start;
     }
 
     .menu-bar {
-      height: 2px;
-      background: #f8fafc;
+      height: 2.5px;
+      background: #ffffff;
       border-radius: 999px;
-      transition: width 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     }
 
-    .menu-bar.bar-top { width: 18px; }
-    .menu-bar.bar-mid { width: 13px; background: #38bdf8; }
+    .menu-bar.bar-top { width: 19px; }
+    .menu-bar.bar-mid { width: 13px; background: var(--c-blush); }
     .menu-bar.bar-bot { width: 16px; }
 
-    .btn-icon:hover .menu-bar.bar-mid {
-      width: 18px;
-    }
+    .btn-icon:hover .menu-bar.bar-mid { width: 19px; background: var(--c-coral); }
+    .btn-icon:hover .menu-bar.bar-bot { width: 12px; }
 
     .badge-shift {
-      height: 44px;
-      padding: 0 11px;
-      border-radius: 14px;
-      color: #ff8580;
+      height: 46px;
+      padding: 0 12px;
+      border-radius: 15px;
+      color: var(--c-blush);
       font-size: 10.5px;
       font-weight: 800;
       display: flex;
@@ -344,15 +370,21 @@
       gap: 5px;
       cursor: pointer;
       flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .badge-shift:active {
+      transform: scale(0.95);
+      border-color: var(--c-coral);
     }
 
     .header-info-card {
       flex: 1;
       min-width: 0;
       overflow: hidden;
-      height: 44px;
-      padding: 5px 12px;
-      border-radius: 14px;
+      height: 46px;
+      padding: 6px 13px;
+      border-radius: 15px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -361,97 +393,113 @@
 
     .route-disp {
       font-family: "Manrope", sans-serif;
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 800;
       color: #ffffff;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 150px;
+      max-width: 155px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
 
     .speed-disp {
       font-size: 10px;
-      color: #94a3b8;
+      color: var(--c-blush);
       font-weight: 600;
+      opacity: 0.9;
     }
 
     .live-indicator {
       font-size: 9px;
       font-weight: 800;
-      padding: 3.5px 8px;
+      padding: 4px 9px;
       border-radius: 999px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       flex-shrink: 0;
     }
 
     .live-on {
-      background: rgba(34, 197, 94, 0.18);
-      color: #4ade80;
-      border: 1px solid rgba(34, 197, 94, 0.5);
+      background: rgba(34, 197, 94, 0.25);
+      color: #86efac;
+      border: 1px solid rgba(74, 222, 128, 0.6);
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
     }
 
     .live-on::before {
       content: "";
-      width: 5px;
-      height: 5px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: #4ade80;
+      box-shadow: 0 0 6px #4ade80;
       animation: livePulse 1.3s infinite;
     }
 
     @keyframes livePulse {
       0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.5); opacity: 0.4; }
+      50% { transform: scale(1.55); opacity: 0.4; }
     }
 
     .live-off {
-      background: rgba(239, 68, 68, 0.16);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.4);
+      background: rgba(255, 107, 107, 0.22);
+      color: var(--c-blush);
+      border: 1px solid rgba(255, 107, 107, 0.5);
     }
 
-    /* ===== UNIFIED BOTTOM DASHBOARD CARD ===== */
+    /* ===== UNIFIED BOTTOM GLASS DASHBOARD CARD ===== */
     .bottom-card {
       position: absolute;
       bottom: max(12px, env(safe-area-inset-bottom, 12px));
       left: 12px;
       right: 12px;
-      max-width: 440px;
+      max-width: 450px;
       margin: 0 auto;
-      background: linear-gradient(160deg, rgba(20, 30, 48, 0.96) 0%, rgba(8, 13, 24, 0.98) 100%);
-      border: 1px solid var(--ohci-border);
-      border-top: 2.5px solid var(--ohci-red);
-      border-radius: 20px;
-      padding: 12px 14px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: linear-gradient(155deg, rgba(122, 46, 111, 0.82) 0%, rgba(59, 27, 79, 0.92) 100%);
+      border: 1px solid rgba(244, 215, 212, 0.35);
+      border-top: 2.5px solid var(--c-coral);
+      border-radius: 24px;
+      padding: 13px 14px;
+      box-shadow: 0 22px 55px rgba(30, 10, 44, 0.78), inset 0 1px 1px rgba(255, 255, 255, 0.22);
+      backdrop-filter: blur(22px) saturate(160%);
+      -webkit-backdrop-filter: blur(22px) saturate(160%);
       z-index: 1100;
       display: flex;
       flex-direction: column;
-      gap: 9px;
+      gap: 10px;
+      animation: bottomSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes bottomSlideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
 
     .stop-select-wrapper {
       display: flex;
       align-items: center;
       gap: 8px;
-      background: rgba(6, 11, 22, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 8px 11px;
-      border-radius: 12px;
+      background: rgba(43, 18, 59, 0.65);
+      border: 1px solid rgba(244, 215, 212, 0.25);
+      padding: 8.5px 12px;
+      border-radius: 14px;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+      transition: border-color 0.2s ease;
+    }
+
+    .stop-select-wrapper:focus-within {
+      border-color: var(--c-coral);
     }
 
     .stop-select-wrapper select {
       flex: 1;
       background: transparent;
       border: none;
-      color: #f8fafc;
+      color: #ffffff;
       font-size: 12px;
       font-weight: 700;
       outline: none;
@@ -459,40 +507,48 @@
     }
 
     .stop-select-wrapper select option {
-      background: #0f172a;
+      background: var(--c-deep);
       color: #fff;
     }
 
     .metrics-grid-3 {
       display: grid;
-      grid-template-columns: 0.9fr 0.9fr 1.3fr;
-      gap: 7px;
+      grid-template-columns: 0.9fr 0.9fr 1.35fr;
+      gap: 8px;
       width: 100%;
     }
 
     .metric-box {
-      background: rgba(6, 11, 22, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 8px 8px;
+      background: linear-gradient(155deg, rgba(59, 27, 79, 0.72) 0%, rgba(38, 15, 53, 0.85) 100%);
+      border: 1px solid rgba(244, 215, 212, 0.22);
+      border-radius: 15px;
+      padding: 9px 9px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       cursor: pointer;
-      transition: border-color 0.18s ease;
+      transition: all 0.2s ease;
       min-width: 0;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .metric-box:hover {
+      border-color: rgba(255, 107, 107, 0.5);
+      transform: translateY(-1px);
     }
 
     .metric-box:active {
-      border-color: var(--ohci-accent);
+      transform: scale(0.97);
+      border-color: var(--c-coral);
     }
 
     .metric-title {
       font-size: 8px;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--ohci-muted);
+      letter-spacing: 0.55px;
+      color: var(--c-blush);
+      opacity: 0.85;
       margin-bottom: 2px;
       white-space: nowrap;
       overflow: hidden;
@@ -501,21 +557,23 @@
 
     .metric-value {
       font-family: "Manrope", sans-serif;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 800;
-      color: var(--ohci-accent);
+      color: #ffffff;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .metric-value.highlight {
-      color: #4ade80;
+      color: var(--c-coral);
+      text-shadow: 0 0 10px rgba(255, 107, 107, 0.35);
     }
 
     .metric-sub {
       font-size: 8px;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--c-blush);
+      opacity: 0.8;
       font-weight: 700;
       margin-top: 1px;
       white-space: nowrap;
@@ -524,35 +582,39 @@
     }
 
     .eta-box {
-      background: linear-gradient(135deg, #e53935 0%, #991b1b 100%);
-      border: none;
-      padding: 8px 10px;
+      background: linear-gradient(135deg, var(--c-coral) 0%, var(--c-rose) 60%, var(--c-plum) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      padding: 9px 11px;
+      box-shadow: 0 8px 20px rgba(255, 107, 107, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.35);
     }
 
     .eta-box .metric-title {
-      color: rgba(255, 255, 255, 0.85);
+      color: #ffffff;
+      opacity: 0.95;
     }
 
     .eta-box .metric-value {
       color: #ffffff;
-      font-size: 12.5px;
+      font-size: 13.5px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     }
 
     .eta-box .metric-sub {
-      color: rgba(255, 255, 255, 0.9);
+      color: var(--c-blush);
+      opacity: 1;
     }
 
-    /* ===== ULTRA-MODERN SIDE DRAWER UI ===== */
+    /* ===== ULTRA-MODERN GLASS SIDE DRAWER UI ===== */
     .drawer-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(3, 7, 18, 0.82);
+      background: rgba(30, 10, 44, 0.65);
       z-index: 2500;
       display: none;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.32s ease;
     }
 
     .drawer-overlay.active {
@@ -563,15 +625,17 @@
     .side-drawer {
       position: fixed;
       top: 0;
-      left: -335px;
-      width: 315px;
-      max-width: 86vw;
+      left: -345px;
+      width: 325px;
+      max-width: 88vw;
       height: 100dvh;
-      background: linear-gradient(180deg, #111a2e 0%, #080d18 100%);
-      border-right: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 15px 0 50px rgba(0, 0, 0, 0.8);
+      background: linear-gradient(180deg, rgba(122, 46, 111, 0.88) 0%, rgba(59, 27, 79, 0.95) 100%);
+      backdrop-filter: blur(26px) saturate(170%);
+      -webkit-backdrop-filter: blur(26px) saturate(170%);
+      border-right: 1px solid rgba(244, 215, 212, 0.3);
+      box-shadow: 18px 0 55px rgba(20, 6, 30, 0.85);
       z-index: 2600;
-      transition: left 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: left 0.36s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -581,11 +645,11 @@
 
     .drawer-top {
       position: relative;
-      padding: 24px 20px 20px;
-      background: linear-gradient(140deg, #dc2626 0%, #991b1b 70%, #7f1d1d 100%);
+      padding: 26px 20px 20px;
+      background: linear-gradient(135deg, var(--c-coral) 0%, var(--c-rose) 55%, var(--c-plum) 100%);
       color: #fff;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 8px 24px rgba(220, 38, 38, 0.28);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 10px 28px rgba(59, 27, 79, 0.45);
     }
 
     .drawer-top::after {
@@ -593,9 +657,9 @@
       position: absolute;
       top: -40px;
       right: -20px;
-      width: 140px;
-      height: 140px;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle, rgba(244, 215, 212, 0.35) 0%, transparent 70%);
       pointer-events: none;
     }
 
@@ -603,33 +667,37 @@
       position: absolute;
       top: 18px;
       right: 16px;
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.24);
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      background: rgba(59, 27, 79, 0.45);
+      border: 1px solid rgba(244, 215, 212, 0.38);
       color: #fff;
       font-size: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.22s ease;
       z-index: 2;
+    }
+
+    .drawer-close:hover {
+      background: rgba(59, 27, 79, 0.75);
+      transform: rotate(90deg);
     }
 
     .drawer-close:active {
       transform: scale(0.9);
-      background: rgba(0, 0, 0, 0.5);
     }
 
     .drawer-content {
-      padding: 18px 16px 24px;
+      padding: 18px 16px 28px;
       overflow-y: auto;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 15px;
     }
 
     .drawer-content::-webkit-scrollbar {
@@ -637,18 +705,18 @@
     }
 
     .drawer-content::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(244, 215, 212, 0.28);
       border-radius: 4px;
     }
 
     /* Driver Glass Panel */
     .driver-info-panel {
-      background: linear-gradient(155deg, rgba(26, 38, 61, 0.7) 0%, rgba(13, 22, 38, 0.85) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 16px;
+      background: linear-gradient(155deg, rgba(214, 89, 143, 0.22) 0%, rgba(45, 19, 62, 0.65) 100%);
+      border: 1px solid rgba(244, 215, 212, 0.26);
+      border-radius: 18px;
       padding: 14px 15px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
-      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 25px rgba(25, 8, 36, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(12px);
     }
 
     .call-btn {
@@ -658,21 +726,22 @@
       gap: 8px;
       width: 100%;
       margin-top: 12px;
-      padding: 9px 14px;
-      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      padding: 10px 14px;
+      background: linear-gradient(135deg, var(--c-coral) 0%, var(--c-rose) 100%);
       color: #fff;
       text-decoration: none;
       border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
       font-size: 12px;
       font-weight: 800;
       letter-spacing: 0.3px;
-      box-shadow: 0 6px 16px rgba(34, 197, 94, 0.3);
+      box-shadow: 0 6px 18px rgba(255, 107, 107, 0.38);
       transition: transform 0.15s ease, filter 0.15s ease;
     }
 
     .call-btn:active {
       transform: scale(0.97);
-      filter: brightness(0.92);
+      filter: brightness(0.94);
     }
 
     /* Action Buttons */
@@ -684,9 +753,9 @@
     .btn-drawer-action {
       flex: 1;
       padding: 11px 8px;
-      background: rgba(22, 32, 53, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 12px;
+      background: rgba(45, 19, 62, 0.65);
+      border: 1px solid rgba(244, 215, 212, 0.25);
+      border-radius: 13px;
       font-weight: 700;
       font-size: 11.5px;
       cursor: pointer;
@@ -695,80 +764,168 @@
       justify-content: center;
       gap: 6px;
       transition: all 0.2s ease;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
     }
 
     .btn-drawer-action.switch {
-      color: #38bdf8;
-      border-color: rgba(56, 189, 248, 0.28);
+      color: var(--c-blush);
+      border-color: rgba(214, 89, 143, 0.5);
     }
 
     .btn-drawer-action.logout {
-      color: #f87171;
-      border-color: rgba(248, 113, 113, 0.28);
+      color: #ff9e9e;
+      border-color: rgba(255, 107, 107, 0.45);
+    }
+
+    .btn-drawer-action:hover {
+      background: rgba(122, 46, 111, 0.55);
     }
 
     .btn-drawer-action:active {
       transform: scale(0.96);
-      filter: brightness(1.15);
     }
 
-    /* Stops Section */
+    /* ===== ANIMATED BUS ROUTE TIMELINE IN DRAWER ===== */
     .drawer-stops-section {
-      background: rgba(11, 18, 32, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 14px 14px 6px;
+      background: rgba(38, 15, 53, 0.58);
+      border: 1px solid rgba(244, 215, 212, 0.2);
+      border-radius: 18px;
+      padding: 15px 14px 8px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
     .timeline {
       list-style: none;
       padding: 0;
-      margin: 10px 0 4px;
+      margin: 14px 0 6px;
+      position: relative;
     }
 
     .timeline-item {
       position: relative;
-      padding-left: 24px;
-      margin-bottom: 15px;
+      padding: 8px 10px 8px 34px;
+      margin-bottom: 12px;
       font-size: 12.5px;
+      border-radius: 12px;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .timeline-item::before {
-      content: '';
-      position: absolute;
-      left: 2px;
-      top: 4px;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #38bdf8;
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
-      border: 2px solid #0f172a;
-    }
-
-    .timeline-item.dest::before {
-      background: #ef4444;
-      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
-    }
-
+    /* Vertical connecting line */
     .timeline-item::after {
       content: '';
       position: absolute;
-      left: 6px;
-      top: 16px;
-      bottom: -15px;
-      width: 2px;
-      background: linear-gradient(180deg, rgba(56, 189, 248, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+      left: 13px;
+      top: 24px;
+      bottom: -16px;
+      width: 2.5px;
+      background: rgba(244, 215, 212, 0.22);
+      transition: background 0.35s ease;
     }
 
     .timeline-item:last-child::after { display: none; }
+
+    /* Passed stop connecting line */
+    .timeline-item.passed::after {
+      background: linear-gradient(180deg, var(--c-coral) 0%, var(--c-rose) 100%);
+      box-shadow: 0 0 8px rgba(255, 107, 107, 0.45);
+    }
+
+    /* Stop Dot Point */
+    .timeline-dot {
+      position: absolute;
+      left: 7px;
+      top: 12px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--c-deep);
+      border: 2.5px solid var(--c-blush);
+      box-shadow: 0 0 8px rgba(244, 215, 212, 0.35);
+      z-index: 2;
+      transition: all 0.35s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Passed Stop State */
+    .timeline-item.passed {
+      opacity: 0.68;
+    }
+
+    .timeline-item.passed .timeline-dot {
+      background: var(--c-rose);
+      border-color: var(--c-blush);
+      box-shadow: 0 0 8px rgba(214, 89, 143, 0.6);
+    }
+
+    /* Active / Next Approaching Stop State with Animated Bus */
+    .timeline-item.active-stop {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.25) 0%, rgba(214, 89, 143, 0.18) 100%);
+      border: 1px solid rgba(255, 107, 107, 0.5);
+      box-shadow: 0 6px 18px rgba(255, 107, 107, 0.22);
+      padding-left: 42px;
+    }
+
+    .timeline-item.active-stop .timeline-dot {
+      left: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 26px;
+      height: 26px;
+      background: linear-gradient(135deg, var(--c-coral), var(--c-rose));
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.32), 0 4px 12px rgba(255, 107, 107, 0.6);
+      animation: busStopPulse 1.6s infinite ease-in-out;
+    }
+
+    @keyframes busStopPulse {
+      0%, 100% {
+        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.35), 0 4px 12px rgba(255, 107, 107, 0.6);
+        transform: translateY(-50%) scale(1);
+      }
+      50% {
+        box-shadow: 0 0 0 7px rgba(255, 107, 107, 0.12), 0 6px 16px rgba(255, 107, 107, 0.85);
+        transform: translateY(-50%) scale(1.08);
+      }
+    }
+
+    .timeline-item.dest .timeline-dot {
+      border-color: var(--c-coral);
+      background: var(--c-coral);
+      box-shadow: 0 0 10px rgba(255, 107, 107, 0.75);
+    }
+
+    .live-bus-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: linear-gradient(90deg, var(--c-coral), var(--c-rose));
+      color: #fff;
+      font-size: 8.5px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-left: 6px;
+      vertical-align: middle;
+      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.45);
+      animation: badgeFloat 1.5s ease-in-out infinite;
+    }
+
+    @keyframes badgeFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
 
     /* ===== POPUP ALERT ===== */
     .pop-alert-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(3, 7, 15, 0.78);
-      backdrop-filter: blur(6px);
+      background: rgba(30, 10, 44, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       z-index: 99998;
       display: none;
       align-items: center;
@@ -779,45 +936,59 @@
     .pop-alert-overlay.show { display: flex; }
 
     .pop-card {
-      background: linear-gradient(155deg, #1b2840 0%, #0b1323 100%);
-      border: 1.5px solid rgba(255, 105, 100, 0.55);
-      border-radius: 22px;
+      background: var(--glass-card);
+      border: 1.5px solid rgba(255, 107, 107, 0.6);
+      border-radius: 24px;
       padding: 22px 18px 18px;
-      max-width: 330px;
+      max-width: 335px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 24px 60px rgba(20, 6, 30, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(22px);
     }
 
     .pop-icon { font-size: 36px; margin-bottom: 8px; }
     .pop-title { font-family: "Manrope", sans-serif; font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 6px; }
-    .pop-body { font-size: 12.5px; color: #cbd5e1; line-height: 1.5; margin-bottom: 16px; }
+    .pop-body { font-size: 12.5px; color: var(--c-blush); line-height: 1.5; margin-bottom: 16px; }
     .pop-btn {
       width: 100%;
       padding: 11px;
-      background: linear-gradient(105deg, #e53935, #b91c1c);
+      background: linear-gradient(110deg, var(--c-coral), var(--c-rose));
       color: #fff;
-      border: none;
-      border-radius: 11px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 12px;
       font-weight: 800;
       font-size: 13px;
       cursor: pointer;
+      box-shadow: 0 6px 18px rgba(255, 107, 107, 0.35);
     }
 
+    /* Map Stop Tooltip Badges */
     .stop-badge {
-      background: rgba(11, 18, 32, 0.92);
-      border: 1.5px solid #38bdf8;
+      background: linear-gradient(135deg, rgba(122, 46, 111, 0.92), rgba(59, 27, 79, 0.95));
+      border: 1.5px solid var(--c-blush);
       color: #ffffff;
       font-size: 9.5px;
       font-weight: 800;
-      padding: 2px 6px;
-      border-radius: 6px;
+      padding: 3px 7px;
+      border-radius: 8px;
       white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(59, 27, 79, 0.5);
     }
 
     .stop-badge.dest {
-      border-color: #ef4444;
-      color: #fca5a5;
+      background: linear-gradient(135deg, var(--c-coral), var(--c-rose));
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+
+    /* 3D Isometric Bus Hover Float on Map */
+    @keyframes isoBusFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-2.5px); }
+    }
+    .iso-bus-wrapper {
+      animation: isoBusFloat 2.4s ease-in-out infinite;
     }
   </style>
 </head>
@@ -947,7 +1118,7 @@
   <div id="sideDrawer" class="side-drawer">
     <div class="drawer-top">
       <button class="drawer-close" onclick="toggleDrawer(false)" aria-label="Close menu">✕</button>
-      <div style="font-size: 9px; font-weight: 800; letter-spacing: 1.4px; opacity: 0.9; margin-bottom: 4px; text-transform: uppercase;">OHCI • MANPOWER TRANSPORT</div>
+      <div style="font-size: 9px; font-weight: 800; letter-spacing: 1.4px; opacity: 0.92; margin-bottom: 4px; text-transform: uppercase;">OHCI • MANPOWER TRANSPORT</div>
       <h3 style="margin: 0 0 4px 0; font-family: 'Manrope', sans-serif; font-size: 19px; font-weight: 800; letter-spacing: -0.3px;">Hitachi Transport</h3>
       <div style="display: flex; align-items: center; gap: 6px;">
         <span style="font-size: 11px;">📍</span>
@@ -959,9 +1130,9 @@
       <div class="driver-info-panel">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
           <div style="font-size: 13.5px; font-weight: 800; color: #fff;" id="cfgDriverName">Driver: --</div>
-          <span style="font-size: 9px; font-weight: 800; color: #38bdf8; background: rgba(56, 189, 248, 0.12); padding: 2px 7px; border-radius: 999px; border: 1px solid rgba(56, 189, 248, 0.25);">OPERATOR</span>
+          <span style="font-size: 9px; font-weight: 800; color: var(--c-blush); background: rgba(255, 107, 107, 0.24); padding: 2.5px 8px; border-radius: 999px; border: 1px solid rgba(255, 107, 107, 0.45);">OPERATOR</span>
         </div>
-        <div style="font-size: 11.5px; color: #94a3b8; font-weight: 600;" id="cfgBusNumber">Bus: --</div>
+        <div style="font-size: 11.5px; color: var(--c-blush); font-weight: 600; opacity: 0.9;" id="cfgBusNumber">Bus: --</div>
         <a id="cfgCallBtn" href="tel:" class="call-btn">📞 Call Bus Driver</a>
       </div>
 
@@ -971,9 +1142,9 @@
       </div>
 
       <div class="drawer-stops-section">
-        <div style="font-size: 9.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; justify-content: space-between;" id="drawerTimelineTitle">
+        <div style="font-size: 9.5px; font-weight: 800; color: var(--c-blush); text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; justify-content: space-between;" id="drawerTimelineTitle">
           <span>Stops Sequence</span>
-          <span style="font-size: 10px;">🚏</span>
+          <span style="font-size: 11px;">🚌</span>
         </div>
         <ul class="timeline" id="drawerStopsList"></ul>
       </div>
@@ -1001,7 +1172,7 @@
     </div>
   </div>
 
-  <!-- Unified Bottom Dashboard Card with Integrated Metrics Grid (No Overlap) -->
+  <!-- Unified Bottom Dashboard Card with Integrated Metrics Grid -->
   <div class="bottom-card">
     <div class="stop-select-wrapper">
       <span style="font-size: 15px;">📍</span>
@@ -1026,7 +1197,7 @@
         <div class="metric-sub">Live Telemetry</div>
       </div>
 
-      <!-- 3. Next Stop & ETA Time (Red Card Box Inside Grid) -->
+      <!-- 3. Next Stop & ETA Time -->
       <div class="metric-box eta-box">
         <div class="metric-title" id="dispNextStop">Next Stop</div>
         <div class="metric-value" id="dispEtaMins">-- min</div>
@@ -1052,11 +1223,23 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const map = L.map('map', { zoomControl: false, maxZoom: 18 }).setView([13.2896471, 77.5701378], 13);
+    const map = L.map('map', {
+      zoomControl: false,
+      maxZoom: 18,
+      minZoom: 10,
+      zoomAnimation: true,
+      fadeAnimation: true,
+      markerZoomAnimation: true
+    }).setView([13.2896471, 77.5701378], 13);
+
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 18, attribution: 'Tiles &copy; Esri'
+      maxZoom: 18,
+      keepBuffer: 6,
+      updateWhenZooming: false,
+      updateWhenIdle: false,
+      attribution: 'Tiles &copy; Esri'
     }).addTo(map);
 
     let allRoutesMaster = {};
@@ -1075,6 +1258,7 @@
     let lastBusBearing = 0;
     let userLat = null, userLng = null;
     let passengerWatchId = null;
+    let lastAppliedDirectionIsEvening = null;
 
     // --- AUTO UPDATE VERSION CHECK LOGIC ---
     const CURRENT_APP_VERSION = "1.0.24"; 
@@ -1097,41 +1281,95 @@
     function showUpdatePopup(message, url) {
       const updateHtml = `
         <div style="font-family: 'Inter', sans-serif;">
-          <p style="margin-bottom: 12px; color: #cbd5e1; font-size: 12.5px;">${message}</p>
+          <p style="margin-bottom: 12px; color: #f4d7d4; font-size: 12.5px;">${message}</p>
           <a href="${url}" target="_blank" class="btn-primary" style="display: block; text-align: center; text-decoration: none; line-height: 44px; margin-top: 10px;">Download Update Now</a>
         </div>
       `;
       showPopAlert("🚀", "App Update Available", updateHtml);
     }
 
-    // Trigger update check on startup
     setTimeout(() => {
       checkForAppUpdates();
     }, 2000);
-    // ----------------------------------------
 
-    // Ultra-Modern Realistic Corporate Bus SVG Icon
+    // --- TIME-BASED DIRECTION LOGIC (Morning < 12:00 vs Evening 12:00 PM to 9:00 PM) ---
+    function isEveningReturnTime() {
+      const hr = new Date().getHours();
+      if (hr >= 12 && hr <= 21) {
+        return true;
+      }
+      if (hr >= 5 && hr < 12) {
+        return false;
+      }
+      return activeShift === "SHIFT_2";
+    }
+
+    // --- HIGH-LEVEL 3D ISOMETRIC RETRO-MODERN BUS ICON (MATCHING REFERENCE IMAGE) ---
     function createBusIcon(bearing = 0) {
+      // Flip horizontally when heading West (180-359 deg) so 3D isometric bus never appears upside-down
+      const normalized = ((bearing % 360) + 360) % 360;
+      const flipX = (normalized > 180 && normalized < 360) ? -1 : 1;
+
       return L.divIcon({
         html: `
-          <div style="transform: rotate(${bearing}deg); transition: transform 0.4s ease-out; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45));">
-            <svg viewBox="0 0 100 100" width="52" height="52">
-              <ellipse cx="50" cy="55" rx="20" ry="40" fill="rgba(0,0,0,0.35)" />
-              <rect x="28" y="10" width="44" height="80" rx="16" fill="#F59E0B" stroke="#B45309" stroke-width="2.5"/>
-              <rect x="38" y="32" width="24" height="36" rx="6" fill="#D97706" opacity="0.6"/>
-              <path d="M 32 22 Q 50 16 68 22 L 66 34 L 34 34 Z" fill="#0f172a" stroke="#475569" stroke-width="1"/>
-              <rect x="34" y="70" width="32" height="12" rx="3" fill="#0f172a" />
-              <rect x="25" y="38" width="4" height="18" rx="2" fill="#1e293b" />
-              <rect x="71" y="38" width="4" height="18" rx="2" fill="#1e293b" />
-              <rect x="25" y="60" width="4" height="16" rx="2" fill="#1e293b" />
-              <rect x="71" y="60" width="4" height="16" rx="2" fill="#1e293b" />
-              <circle cx="33" cy="13" r="3" fill="#E0F2FE" stroke="#0284C7" stroke-width="1"/>
-              <circle cx="67" cy="13" r="3" fill="#E0F2FE" stroke="#0284C7" stroke-width="1"/>
-              <rect x="28" y="48" width="44" height="8" fill="#dc2626" />
-            </svg>
+          <div class="iso-bus-wrapper" style="width: 66px; height: 66px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 8px 14px rgba(59,27,79,0.55));">
+            <div style="transform: scaleX(${flipX}); transition: transform 0.35s ease-out; width: 64px; height: 64px;">
+              <svg viewBox="0 0 120 110" width="64" height="64" xmlns="http://www.w3.org/2000/svg">
+                <!-- Ground Isometric Drop Shadow -->
+                <path d="M 16 62 L 66 96 C 74 101 88 99 98 92 L 112 80 C 116 76 114 70 106 65 L 54 32 C 44 26 28 30 18 40 C 10 48 10 57 16 62 Z" fill="rgba(35, 14, 48, 0.42)" />
+
+                <!-- Lower Body Base (Two-Tone Sage & Coral-Blush Trim) -->
+                <path d="M 18 52 L 68 85 C 75 89 86 88 95 81 L 106 71 C 110 67 110 61 108 55 L 55 21 L 20 36 C 16 41 16 48 18 52 Z" fill="#b8c9bc" stroke="#3b1b4f" stroke-width="1.6" stroke-linejoin="round"/>
+
+                <!-- Accent Stripe (#ff6b6b to #d6598f) -->
+                <path d="M 18 46 L 68 79 C 75 83 86 82 95 75 L 107 64 L 108 59 L 95 70 C 86 77 75 78 68 74 L 18 41 Z" fill="#ff6b6b"/>
+
+                <!-- Upper Cabin Cream Body (#fdf8f5) -->
+                <path d="M 18 44 L 22 23 C 24 16 32 10 42 7 L 55 4 C 62 3 68 4 74 8 L 106 31 C 111 35 112 42 110 52 L 107 64 L 95 74 C 86 81 75 82 68 78 L 18 44 Z" fill="#fcf5f2" stroke="#3b1b4f" stroke-width="1.6" stroke-linejoin="round"/>
+
+                <!-- Isometric Ribbed Roof -->
+                <path d="M 28 19 L 48 7 C 54 4 62 4 68 8 L 102 31 C 106 34 106 39 101 43 L 81 56 C 75 60 67 59 61 55 L 27 31 C 23 28 23 22 28 19 Z" fill="#fffaf8" stroke="#e2d2ce" stroke-width="1.2"/>
+                <!-- Roof Ribs -->
+                <line x1="36" y1="19" x2="72" y2="44" stroke="#d5c2be" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="42" y1="15" x2="78" y2="40" stroke="#d5c2be" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="48" y1="12" x2="84" y2="37" stroke="#d5c2be" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="54" y1="9" x2="90" y2="34" stroke="#d5c2be" stroke-width="1.5" stroke-linecap="round"/>
+
+                <!-- Side Panoramic Windows (Plum/Dark Glass #3b1b4f) -->
+                <path d="M 24 27 L 34 34 L 33 45 L 22 38 Z" fill="#3b1b4f" stroke="#7a2e6f" stroke-width="1"/>
+                <path d="M 37 36 L 48 43 L 47 54 L 36 47 Z" fill="#3b1b4f" stroke="#7a2e6f" stroke-width="1"/>
+                <path d="M 51 45 L 62 52 L 61 63 L 50 56 Z" fill="#3b1b4f" stroke="#7a2e6f" stroke-width="1"/>
+                <path d="M 65 54 L 74 60 L 73 71 L 64 65 Z" fill="#3b1b4f" stroke="#7a2e6f" stroke-width="1"/>
+
+                <!-- Split Front Windshield (With Gloss Reflection) -->
+                <path d="M 79 58 L 92 49 L 94 61 L 78 71 Z" fill="#3b1b4f" stroke="#7a2e6f" stroke-width="1.2" stroke-linejoin="round"/>
+                <path d="M 94 48 L 106 39 L 107 51 L 96 60 Z" fill="#4c2363" stroke="#7a2e6f" stroke-width="1.2" stroke-linejoin="round"/>
+                <!-- Windshield Glare -->
+                <path d="M 82 58 L 89 53 L 86 64 L 81 67 Z" fill="rgba(244, 215, 212, 0.28)"/>
+                <path d="M 97 48 L 103 43 L 101 53 L 97 56 Z" fill="rgba(244, 215, 212, 0.25)"/>
+
+                <!-- Rear Wheel -->
+                <ellipse cx="31" cy="59" rx="6.5" ry="8.5" transform="rotate(-22 31 59)" fill="#261133" stroke="#15081f" stroke-width="1.5"/>
+                <ellipse cx="31" cy="59" rx="3.2" ry="4.5" transform="rotate(-22 31 59)" fill="#f4d7d4"/>
+
+                <!-- Front Wheel -->
+                <ellipse cx="60" cy="78" rx="6.8" ry="8.8" transform="rotate(-22 60 78)" fill="#261133" stroke="#15081f" stroke-width="1.5"/>
+                <ellipse cx="60" cy="78" rx="3.4" ry="4.6" transform="rotate(-22 60 78)" fill="#f4d7d4"/>
+
+                <!-- Headlights & Front Chrome Bumper -->
+                <circle cx="84" cy="79" r="3" fill="#fffbeb" stroke="#d6598f" stroke-width="1"/>
+                <circle cx="104" cy="65" r="2.6" fill="#fffbeb" stroke="#d6598f" stroke-width="1"/>
+                <!-- Turn Indicator -->
+                <path d="M 75 82 L 81 84 L 81 86 L 75 84 Z" fill="#ff6b6b"/>
+                <!-- Front Chrome Bumper -->
+                <path d="M 78 88 L 109 67 C 111 66 112 68 110 70 L 80 91 C 77 92 76 89 78 88 Z" fill="#e2e8f0" stroke="#475569" stroke-width="1"/>
+              </svg>
+            </div>
           </div>
         `,
-        className: '', iconSize: [52, 52], iconAnchor: [26, 26]
+        className: '',
+        iconSize: [66, 66],
+        iconAnchor: [33, 33]
       });
     }
 
@@ -1379,35 +1617,73 @@
       showPopAlert("☀️", `${greeting}, ${loggedUser.name || 'Employee'}!`, `Your route is set to <b>${rName}</b> (${sh}). Live tracking is active.`);
     }
 
-    function loadActiveRoute() {
+    // Updates the animated bus position inside the side menu timeline
+    function updateDrawerTimelineBusAnimation() {
+      const drawerList = document.getElementById('drawerStopsList');
+      if (!drawerList) return;
+      const items = drawerList.querySelectorAll('.timeline-item');
+
+      items.forEach((li, idx) => {
+        const dot = li.querySelector('.timeline-dot');
+        const badge = li.querySelector('.live-bus-pill');
+        if (badge) badge.remove();
+
+        li.classList.remove('passed', 'active-stop');
+        if (idx < currentStopIdx) {
+          li.classList.add('passed');
+          if (dot) dot.innerHTML = `<span style="font-size:8px;color:#fff;">✓</span>`;
+        } else if (idx === currentStopIdx) {
+          li.classList.add('active-stop');
+          if (dot) dot.innerHTML = `<span style="font-size:13px;line-height:1;">🚌</span>`;
+          const titleStrong = li.querySelector('strong');
+          if (titleStrong) {
+            const pill = document.createElement('span');
+            pill.className = 'live-bus-pill';
+            pill.innerHTML = `NEXT`;
+            titleStrong.appendChild(pill);
+          }
+        } else {
+          if (dot) dot.innerHTML = '';
+        }
+      });
+    }
+
+    function setupOrderedStopsUI() {
       const r = allRoutesMaster[activeRouteId];
       if (!r) return;
 
-      document.getElementById('dispRouteTitle').innerText = r.routeName || activeRouteId;
-      document.getElementById('drawerRouteName').innerText = r.routeName || activeRouteId;
-      document.getElementById('cfgDriverName').innerText = "Driver: " + (r.driverName || "Assigned Driver");
-      document.getElementById('cfgBusNumber').innerText = "Bus: " + (r.busNumber || "--");
-      document.getElementById('cfgCallBtn').href = "tel:" + (r.driverPhone || "");
-
       const rawStops = r.stops || [];
-      
-      if (activeShift === "SHIFT_2") {
-        activeStops = [...rawStops].reverse();
+      const isEvening = isEveningReturnTime();
+      lastAppliedDirectionIsEvening = isEvening;
+
+      // Ensure base array is always Morning order (Start -> Hitachi at the end)
+      let morningOrdered = [...rawStops];
+      if (morningOrdered.length > 1) {
+        const firstIsHitachi = /hitachi/i.test(morningOrdered[0].name || '');
+        const lastIsHitachi = /hitachi/i.test(morningOrdered[morningOrdered.length - 1].name || '');
+        if (firstIsHitachi && !lastIsHitachi) {
+          morningOrdered.reverse();
+        }
+      }
+
+      if (isEvening) {
+        // Evening (12 PM to 9 PM): Company (Hitachi) -> Railway Station -> Other Stops
+        activeStops = [...morningOrdered].reverse();
         document.getElementById('drawerTimelineTitle').querySelector('span').innerText = "Stops Sequence (Hitachi ➔ Return)";
       } else {
-        activeStops = [...rawStops];
+        // Morning (7 AM to 10 AM): Start Stops -> D-Cross -> Railway Station -> Hitachi
+        activeStops = [...morningOrdered];
         document.getElementById('drawerTimelineTitle').querySelector('span').innerText = "Stops Sequence (Start ➔ Hitachi)";
       }
 
-      currentStopIdx = 0;
-      alertStopIdx = null;
-      hasAlertFired = false;
+      currentStopIdx = isEvening && activeStops.length > 1 ? 1 : 0;
 
       stopMarkers.forEach(m => map.removeLayer(m));
       stopMarkers = [];
 
       const dropSelect = document.getElementById('boardingStopSelect');
       const drawerList = document.getElementById('drawerStopsList');
+      const prevSelectedVal = dropSelect.value;
       dropSelect.innerHTML = '<option value="">Select Boarding Stop for 1-Min Alarm Alert...</option>';
       drawerList.innerHTML = '';
 
@@ -1420,13 +1696,17 @@
 
         const li = document.createElement('li');
         li.className = 'timeline-item' + (isDest ? ' dest' : '');
-        li.innerHTML = `<strong style="color:#f8fafc;">${st.name}</strong><br><small style="color:#94a3b8;">Schedule: ${st.time || '--'}</small>`;
+        li.innerHTML = `
+          <div class="timeline-dot"></div>
+          <strong style="color:#ffffff; display:block; line-height:1.35;">${st.name}</strong>
+          <small style="color:#f4d7d4; opacity:0.82; font-weight:600;">Schedule: ${st.time || '--'}</small>
+        `;
         drawerList.appendChild(li);
 
         const m = L.circleMarker([st.lat, st.lng], {
           radius: isDest ? 8 : 6,
-          color: isDest ? '#ef4444' : '#38bdf8',
-          fillColor: '#070b14',
+          color: isDest ? '#ff6b6b' : '#d6598f',
+          fillColor: '#3b1b4f',
           fillOpacity: 1,
           weight: 3
         }).bindTooltip(`<b>${st.name}</b>`, {
@@ -1439,9 +1719,34 @@
         stopMarkers.push(m);
       });
 
+      if (prevSelectedVal !== "" && activeStops[parseInt(prevSelectedVal, 10)]) {
+        dropSelect.value = prevSelectedVal;
+      }
+
+      if (activeStops.length > 0) {
+        document.getElementById('dispNextStop').innerText = activeStops[currentStopIdx].name;
+      }
+
+      updateDrawerTimelineBusAnimation();
+    }
+
+    function loadActiveRoute() {
+      const r = allRoutesMaster[activeRouteId];
+      if (!r) return;
+
+      document.getElementById('dispRouteTitle').innerText = r.routeName || activeRouteId;
+      document.getElementById('drawerRouteName').innerText = r.routeName || activeRouteId;
+      document.getElementById('cfgDriverName').innerText = "Driver: " + (r.driverName || "Assigned Driver");
+      document.getElementById('cfgBusNumber').innerText = "Bus: " + (r.busNumber || "--");
+      document.getElementById('cfgCallBtn').href = "tel:" + (r.driverPhone || "");
+
+      alertStopIdx = null;
+      hasAlertFired = false;
+
+      setupOrderedStopsUI();
+
       if (activeStops.length > 0) {
         map.setView([activeStops[0].lat, activeStops[0].lng], 13);
-        document.getElementById('dispNextStop').innerText = activeStops[0].name;
       }
 
       listenToBusGpsStream();
@@ -1470,6 +1775,10 @@
 
       busWatcherRef = db.ref(`live_bus/${activeRouteId}`);
       busWatcherRef.on('value', (snap) => {
+        if (activeRouteId && lastAppliedDirectionIsEvening !== isEveningReturnTime()) {
+          setupOrderedStopsUI();
+        }
+
         const bus = snap.val();
         const badge = document.getElementById('liveStatusBadge');
         const speedTxt = document.getElementById('dispSpeedSub');
@@ -1478,7 +1787,7 @@
 
         const isFresh = bus && bus.updatedAt && (now - bus.updatedAt < 20000);
 
-        if (!bus || !bus.isActive || !isFresh || (bus.activeShift && bus.activeShift !== activeShift)) {
+        if (!bus || !bus.isActive || !isFresh) {
           badge.className = "live-indicator live-off";
           badge.innerText = "OFFLINE";
           speedTxt.innerText = "Bus halted / Driver offline";
@@ -1521,25 +1830,69 @@
       });
     }
 
-    function updateNextStopAndAlarm(lat, lng) {
-      if (activeStops.length === 0) return;
+    // --- GEOMETRIC SEGMENT PROJECTION: ACCURATELY FINDS NEXT UPCOMING STOP ---
+    function findUpcomingStopIndex(lat, lng) {
+      const n = activeStops.length;
+      if (n === 0) return 0;
+      if (n === 1) return 0;
 
-      let nearestIdx = currentStopIdx;
-      let minDistance = Infinity;
+      const cosLat = Math.cos(lat * Math.PI / 180);
+      let bestSegment = 0;
+      let minPerpDist = Infinity;
+      let bestT = 0;
 
-      for (let i = currentStopIdx; i < activeStops.length; i++) {
-        const dist = getDistanceMeters(lat, lng, activeStops[i].lat, activeStops[i].lng);
-        if (dist < minDistance) {
-          minDistance = dist;
-          nearestIdx = i;
+      for (let i = 0; i < n - 1; i++) {
+        const A = activeStops[i];
+        const B = activeStops[i + 1];
+
+        const bx = (B.lng - A.lng) * cosLat * 111320;
+        const by = (B.lat - A.lat) * 111320;
+        const px = (lng - A.lng) * cosLat * 111320;
+        const py = (lat - A.lat) * 111320;
+
+        const segLenSq = bx * bx + by * by;
+        let t = 0;
+        if (segLenSq > 0) {
+          t = (px * bx + py * by) / segLenSq;
+          t = Math.max(0, Math.min(1, t));
+        }
+
+        const projX = t * bx;
+        const projY = t * by;
+        const dist = Math.hypot(px - projX, py - projY);
+
+        if (dist < minPerpDist) {
+          minPerpDist = dist;
+          bestSegment = i;
+          bestT = t;
         }
       }
 
-      if (minDistance < 150 && currentStopIdx < activeStops.length - 1) {
-        currentStopIdx = Math.max(currentStopIdx, nearestIdx);
-        if (getDistanceMeters(lat, lng, activeStops[currentStopIdx].lat, activeStops[currentStopIdx].lng) < 100 && currentStopIdx < activeStops.length - 1) {
-          currentStopIdx++;
+      let nextIdx = bestSegment + 1;
+      if (bestSegment === 0 && bestT === 0) {
+        const distToFirst = getDistanceMeters(lat, lng, activeStops[0].lat, activeStops[0].lng);
+        if (!lastAppliedDirectionIsEvening && distToFirst > 120) {
+          nextIdx = 0;
         }
+      }
+
+      const distToNext = getDistanceMeters(lat, lng, activeStops[nextIdx].lat, activeStops[nextIdx].lng);
+      if (distToNext < 100 && nextIdx < n - 1) {
+        nextIdx++;
+      }
+
+      return nextIdx;
+    }
+
+    function updateNextStopAndAlarm(lat, lng) {
+      if (activeStops.length === 0) return;
+
+      const calculatedIdx = findUpcomingStopIndex(lat, lng);
+      const prevIdx = currentStopIdx;
+      currentStopIdx = calculatedIdx;
+
+      if (prevIdx !== currentStopIdx) {
+        updateDrawerTimelineBusAnimation();
       }
 
       const activeTarget = activeStops[currentStopIdx];
@@ -1547,15 +1900,15 @@
       document.getElementById('dispNextStop').innerText = activeTarget.name;
 
       const km = (targetDist / 1000).toFixed(1);
-      const speed = busSpeed > 5 ? busSpeed : 25;
-      const mins = Math.max(1, Math.round(((targetDist / 1000) / speed) * 60));
+      const effectiveSpeed = busSpeed > 18 ? busSpeed : 25;
+      const mins = Math.max(1, Math.round(((targetDist / 1000) / effectiveSpeed) * 60));
       document.getElementById('dispEtaMins').innerText = `~${mins} min`;
       document.getElementById('dispEtaKm').innerText = `${km} km away`;
 
       if (alertStopIdx !== null && !hasAlertFired && activeStops[alertStopIdx]) {
         const myStop = activeStops[alertStopIdx];
         const myDist = getDistanceMeters(lat, lng, myStop.lat, myStop.lng);
-        const myMins = ((myDist / 1000) / speed) * 60;
+        const myMins = ((myDist / 1000) / effectiveSpeed) * 60;
 
         if (myDist <= 350 || myMins <= 1.0) {
           hasAlertFired = true;
@@ -1634,7 +1987,7 @@
         userLng = pos.coords.longitude;
         if (!userMarker) {
           const userDot = L.divIcon({
-            html: '<div style="width:16px;height:16px;border-radius:50%;background:#38bdf8;border:3px solid #fff;box-shadow:0 0 12px #38bdf8;"></div>',
+            html: '<div style="width:16px;height:16px;border-radius:50%;background:#ff6b6b;border:3px solid #fff;box-shadow:0 0 14px #ff6b6b;"></div>',
             className: '',
             iconSize: [16, 16],
             iconAnchor: [8, 8]
