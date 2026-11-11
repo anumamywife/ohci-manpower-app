@@ -1269,7 +1269,7 @@
     let lastAppliedDirectionIsEvening = null;
 
     // --- AUTO UPDATE VERSION CHECK LOGIC ---
-    const CURRENT_APP_VERSION = "1.0.30"; 
+    const CURRENT_APP_VERSION = "1.0.31"; 
 
     function checkForAppUpdates() {
       db.ref('app_config').once('value', (snapshot) => {
@@ -1313,8 +1313,11 @@
     }
 
     // --- HIGH-LEVEL 3D ISOMETRIC RETRO-MODERN BUS ICON ---
+    // FIX 2: Added support for map rotation so bus icon rotates exactly with the road direction
     function createBusIcon(bearing = 0) {
-      const normalized = ((bearing % 360) + 360) % 360;
+      const mapBearing = (map && typeof map.getBearing === 'function') ? map.getBearing() : 0;
+      const displayBearing = bearing - mapBearing; 
+      const normalized = ((displayBearing % 360) + 360) % 360;
       const flipX = (normalized > 180 && normalized < 360) ? -1 : 1;
 
       return L.divIcon({
@@ -1356,6 +1359,13 @@
         iconAnchor: [33, 33]
       });
     }
+
+    // Force marker re-evaluation when map rotation gesture is detected
+    map.on('rotate', () => {
+      if (busMarker && busLat !== null && busLng !== null) {
+        busMarker.setIcon(createBusIcon(lastBusBearing));
+      }
+    });
 
     function toggleDrawer(open) {
       document.getElementById('sideDrawer').classList.toggle('active', open);
@@ -1684,7 +1694,6 @@
         `;
         drawerList.appendChild(li);
 
-        // --- FIXED: Custom L.divIcon used instead of bindTooltip to lock labels properly during mobile rotation ---
         const stopHtml = `
           <div style="display: flex; flex-direction: column; align-items: center; pointer-events: none; transform: translate(-50%, -100%);">
             <div class="stop-badge ${isDest ? 'dest' : ''}">${st.name}</div>
@@ -1753,60 +1762,56 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    // --- FIXED: OSRM ROAD-SNAPPED ROUTING WITH STRICT MULTIPLE LINE PURGING ---
+    // --- FIX 3: Async Race Controller implemented to STOP Polyline flickering ---
+    let polylineUpdateId = 0; 
+    
     async function updateBusToSelectedStopPolyline() {
-      // Clear out all prior active route lines from the map layer
-      activeRouteLines.forEach(line => {
-        if (line) map.removeLayer(line);
-      });
-      activeRouteLines = [];
-
       if (busLat === null || busLng === null) return;
-      if (alertStopIdx === null || !activeStops[alertStopIdx]) return;
+      if (alertStopIdx === null || !activeStops[alertStopIdx]) {
+        // Clear if no stop selected
+        activeRouteLines.forEach(line => { if (line) map.removeLayer(line); });
+        activeRouteLines = [];
+        return;
+      }
 
       const selectedStop = activeStops[alertStopIdx];
+      const currentUpdateId = ++polylineUpdateId; // Track this specific API request
 
       try {
         const url = `https://router.project-osrm.org/route/v1/driving/${busLng},${busLat};${selectedStop.lng},${selectedStop.lat}?overview=full&geometries=geojson`;
-        
         const response = await fetch(url);
         const data = await response.json();
+
+        // If a newer request was made while fetching, ignore this old response
+        if (currentUpdateId !== polylineUpdateId) return; 
 
         if (data.routes && data.routes.length > 0) {
           const coords = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
 
-          // Outer glow shadow road line
-          const glowLine = L.polyline(coords, {
-            color: '#ff6b6b',
-            weight: 6,
-            opacity: 0.45,
-            smoothFactor: 1
-          }).addTo(map);
+          // Create new lines BEFORE removing old ones (Fixes the Blink/Flash)
+          const glowLine = L.polyline(coords, { color: '#ff6b6b', weight: 6, opacity: 0.45, smoothFactor: 1 }).addTo(map);
+          const mainLine = L.polyline(coords, { color: '#d6598f', weight: 4, opacity: 0.92, dashArray: '8, 8', smoothFactor: 1 }).addTo(map);
 
-          // Main vibrant road line
-          const mainLine = L.polyline(coords, {
-            color: '#d6598f',
-            weight: 4,
-            opacity: 0.92,
-            dashArray: '8, 8',
-            smoothFactor: 1
-          }).addTo(map);
-
-          activeRouteLines.push(glowLine, mainLine);
+          // Now safely remove old lines seamlessly
+          activeRouteLines.forEach(line => { if (line) map.removeLayer(line); });
+          activeRouteLines = [glowLine, mainLine];
         } else {
-          drawFallbackStraightLine(selectedStop);
+          drawFallbackStraightLine(selectedStop, currentUpdateId);
         }
       } catch (e) {
         console.log("Routing API error:", e);
-        drawFallbackStraightLine(selectedStop);
+        drawFallbackStraightLine(selectedStop, currentUpdateId);
       }
     }
 
-    function drawFallbackStraightLine(selectedStop) {
+    function drawFallbackStraightLine(selectedStop, updateId) {
+      if (updateId !== polylineUpdateId) return;
       const latLngs = [[busLat, busLng], [selectedStop.lat, selectedStop.lng]];
       const glowLine = L.polyline(latLngs, { color: '#ff6b6b', weight: 6, opacity: 0.45 }).addTo(map);
       const mainLine = L.polyline(latLngs, { color: '#d6598f', weight: 4, opacity: 0.92, dashArray: '8, 8' }).addTo(map);
-      activeRouteLines.push(glowLine, mainLine);
+      
+      activeRouteLines.forEach(line => { if (line) map.removeLayer(line); });
+      activeRouteLines = [glowLine, mainLine];
     }
 
     let busWatcherRef = null;
@@ -1978,6 +1983,7 @@
       updateBusToSelectedStopPolyline();
     }
 
+    // --- FIX 1: allowWhileIdle set to true so background notifications fire in Doze mode ---
     async function triggerFiveMinuteArrivalAlarm(stopName) {
       playChimeAudio();
       if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
@@ -1991,8 +1997,8 @@
               {
                 title: "🚌 Bus Arriving in ~5 Minutes!",
                 body: `Your bus is approaching ${stopName}. Please be ready!`,
-                id: new Date().getTime(),
-                schedule: { at: new Date(Date.now() + 1000) },
+                id: Math.floor(Math.random() * 2000000000), // Safe 32-bit integer for Android ID limit
+                schedule: { at: new Date(Date.now() + 1000), allowWhileIdle: true }, // allowWhileIdle forces it in background
                 sound: null,
                 badge: 1
               }
